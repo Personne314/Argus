@@ -2,8 +2,8 @@
 !.gitignore
 !CMakeLists.txt
 !init.sh
+!src/*
 !src/
-!src/.gitkeep
 !test/
 !test/.gitkeep
 !resources/

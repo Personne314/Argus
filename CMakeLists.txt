@@ -2,19 +2,17 @@ cmake_minimum_required(VERSION 3.28.3)
 
 # Definition of project main propreties.
 # MUST be adapted to each project.
-project(CppProjectTemplate LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(EXEC_NAME "grcc")
-# set(LIBRARIES )
+project(Argus LANGUAGES C)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED True)
+set(EXEC_NAME "argus")
+set(LIBRARIES m GL GLEW SDL2 SDL2_image SDL2_ttf)
 set(DEBUG_FLAGS -g -Wall -Wextra)
 set(RELEASE_FLAGS -O3)
 
-
-
 # Get all sources files of the project.
-file(GLOB_RECURSE TESTS "test/*.cpp")
-file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h" "src/*.hpp")
+file(GLOB_RECURSE TESTS "test/*.c")
+file(GLOB_RECURSE SOURCES "src/*.c" "src/*.h")
 
 # Exclude the file containing the main function for testing.
 set(SOURCES_TESTS "")
