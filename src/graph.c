@@ -7,7 +7,7 @@
 
 
 
-Graph *graph_create(float x, float y, float w, float h) {
+Graph *graph_create(int window_width, int window_height, float x, float y, float w, float h) {
 	Graph *graph = malloc(sizeof(Graph));
 	if (!graph) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph");
@@ -18,6 +18,7 @@ Graph *graph_create(float x, float y, float w, float h) {
 	graph->w = w;
 	graph->h = h;
 	graph->vao = NULL;
+	
 	return graph;
 }
 
@@ -28,7 +29,19 @@ void graph_free(Graph *graph) {
 
 
 
-bool graph_prepare_graphics(Graph *graph) {
+
+
+void graph_set_title(const char *title) {
+
+}
+
+
+bool graph_prepare_static(Graph *graph, int window_width, int window_height) {
+
+}
+
+
+bool graph_prepare_dynamic(Graph *graph) {
 	float vertices[12] = {
 		graph->x,graph->y, graph->x+graph->w,graph->y+graph->h, graph->x,graph->y+graph->h, 
 		graph->x,graph->y, graph->x+graph->w,graph->y, graph->x+graph->w,graph->y+graph->h

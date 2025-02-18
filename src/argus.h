@@ -17,16 +17,27 @@ void argus_quit();
 ////////////////////////////////////////////////////////////////
 
 // Resizes the Argus window.
-void argus_set_window_size(int w, int h);
+void argus_set_size(int w, int h);
+
+// Sets the window title.
+void argus_set_title(const char *window_title);
 
 // Sets the graph grid dimensions.
-void argus_set_graph_grid(int m, int n);
+void argus_set_grid_size(int m, int n);
 
 // Sets the graph currently being manipulated.
 void argus_set_current_graph(int x, int y);
 
 // Defines the update function of the graph data.
 void argus_set_update_function(void (*func)(void*, double), void *args);
+
+
+////////////////////////////////////////////////////////////////
+//                     Graph functions                        //
+////////////////////////////////////////////////////////////////
+
+// Sets the current graph title.
+void argus_graph_set_title(const char *graph_title);
 
 
 ////////////////////////////////////////////////////////////////

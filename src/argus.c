@@ -28,7 +28,7 @@ static SDL_Window *window;		///< SDL window used to display the graphs.
 static SDL_GLContext context;	///< OpenGL context for the rendering process.
 static int width;	///< Width of the window.
 static int height;	///< Height of the window.
-static char *title;	///< Title of the window.
+static const char *title;	///< Title of the window.
 
 // Array of graphs to display in the window.
 static int lines;			///< Number of lines in the graph grid.
@@ -57,7 +57,8 @@ static pthread_mutex_t argus_mutex = PTHREAD_MUTEX_INITIALIZER;
 	} \
 } while(0);
 
-
+// Macro to get the current graph.
+#define CURRENT_GRAPH grid[current_line*columns+current_column]
 
 
 
@@ -143,7 +144,7 @@ void argus_init() {
 		argus_quit();
 		return;
 	}
-	grid[0] = graph_create(offset_width, offset_height, 1.0f-2.0f*offset_width, 1.0f-2.0f*offset_height);
+	grid[0] = graph_create(width, height, offset_width, offset_height, 1.0f-2.0f*offset_width, 1.0f-2.0f*offset_height);
 	if (!grid[0]) {
 		fprintf(stderr, "[ARGUS]: fatal: failed to create the graphs of the window !\n");
 		pthread_mutex_unlock(&argus_mutex);
@@ -202,7 +203,7 @@ void argus_quit() {
 /// @param h Height of the window.
 /// @note If w or h is negative or null, the default window size will be used (640*480). 
 /// @note This function sets the current graph to (0,0)
-void argus_set_window_size(int w, int h) {
+void argus_set_size(int w, int h) {
 	CHECK_INIT(init, argus_mutex)
 	if (w <= 0 || h <= 0) {
 		fprintf(stderr, "[ARGUS]: warning: w,h must be > 0 in argus_set_window_size. Default size will be used !\n");
@@ -215,6 +216,12 @@ void argus_set_window_size(int w, int h) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the window title.
+/// @param title The title of the window.
+void argus_set_title(const char *window_title) {
+	title = window_title;
+}
+
 /// @brief Sets the graph grid dimensions.
 /// @param w Number of columns.
 /// @param h Number of lines.
@@ -222,7 +229,7 @@ void argus_set_window_size(int w, int h) {
 /// The window will contains m*n graphs rendered in a grid.
 /// @note If m or n is lower than 1, its value will be set to 1.
 /// @note A call to this function will destroys all previously created graphs.
-void argus_set_graph_grid(int w, int h) {
+void argus_set_grid_size(int w, int h) {
 	CHECK_INIT(init, argus_mutex)
 	if (w < 1) {
 		fprintf(stderr, "[ARGUS]: warning: number of columns lower than 1. Will be set to 1.\n");
@@ -262,8 +269,9 @@ void argus_set_graph_grid(int w, int h) {
 		int c = i%columns;
 		int l = i/columns;
 		grid[i] = graph_create(
+			width, height,
 			offset_width + c*(offset_width+graph_width), 
-			offset_height + l*(offset_width+graph_height),
+			offset_height + l*(offset_height+graph_height),
 			graph_width, graph_height
 		);
 		if (!grid[i]) {
@@ -320,6 +328,20 @@ void argus_set_update_function(void (*func)(void*, double), void *args) {
 
 
 ////////////////////////////////////////////////////////////////
+//                     Graph functions                        //
+////////////////////////////////////////////////////////////////
+
+/// @brief Sets the current graph title.
+/// @param title The title of the graph.
+void argus_graph_set_title(const char *graph_title) {
+	CURRENT_GRAPH->title = graph_title;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////
 //                    Rendering function                      //
 ////////////////////////////////////////////////////////////////
 
@@ -358,7 +380,7 @@ void argus_show() {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	SDL_GL_SetSwapInterval(0);
 
-	glewExperimental = GL_TRUE; // Active certaines extensions
+	// GLEW initialization.
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "[ARGUS]: error: Failed to initialize GLEW.\n");
 		goto ARGUS_ERROR_CONTEXT_CREATION;
@@ -383,7 +405,7 @@ void argus_show() {
 	// Renders the window.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < lines*columns; ++i) {
-		if (graph_prepare_graphics(grid[i])) {
+		if (graph_prepare_dynamic(grid[i])) {
 			fprintf(stderr, "[ARGUS]: error: Error during graph preparation : %s.\n", SDL_GetError());
 			goto ARGUS_ERROR_GRAPHS_PREPARATION;
 		}
