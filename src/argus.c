@@ -5,11 +5,20 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#include <GL/gl.h>
+#include <GL/glew.h>
 #include <stdbool.h>
 #include <pthread.h>
 
 #include "graph.h"
+#include "shader.h"
+
+
+#define OFFSET_SIZE 10
+
+
+////////////////////////////////////////////////////////////////
+//                     Library components                     //
+////////////////////////////////////////////////////////////////
 
 // Init state of the library.
 static bool init = false;
@@ -26,22 +35,23 @@ static int lines;			///< Number of lines in the graph grid.
 static int columns;			///< Number of columns in the graph grid.
 static int current_line;	///< Current graph line.
 static int current_column;	///< Current graph column.
+static float offset_width;		///< Width of the offsets between each graph.
+static float offset_height;	///< Height of the offsets between each graph.
 static Graph **grid;		///< Graphs grid.
 
+// Update function.
 static void (*update_func)(void*, double);	///< Function used to update the graph data.
 static void* update_args;	///< Arguments to give to the update function.
 static double dt;			///< Time interval to give to the update function.
 
-
 // Main mutex used to make the library thread safe.
 static pthread_mutex_t argus_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 
 // Macro to check if the module was initialized.
 #define CHECK_INIT(init, mutex) do { \
 	pthread_mutex_lock(&mutex); \
 	if (!init) { \
-		fprintf(stderr, "[ARGUS]: error: not initialized !\n"); \
+		fprintf(stderr, "[ARGUS]: fatal: not initialized !\n"); \
 		pthread_mutex_unlock(&mutex); \
 		return; \
 	} \
@@ -50,11 +60,10 @@ static pthread_mutex_t argus_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 
-static void argus_window_render() {
 
-}
-
-
+////////////////////////////////////////////////////////////////
+//                       Init functions                       //
+////////////////////////////////////////////////////////////////
 
 /// @brief Warning for the user in case of argus_quit call forgotten at exit.
 /// 
@@ -108,9 +117,14 @@ void argus_init() {
 		return;
 	}
 
-	// Initialize the window data.
+	// Resets the data.
 	window = NULL;
 	context = NULL;
+	grid = NULL;
+	update_func = NULL;
+	update_args = NULL;
+	for (int i = 0; i < SHADER_LIST_SIZE; ++i) shaders[i] = NULL;
+	dt = 1.0;
 	width = 640;
 	height = 480;
 	title = "ARGUS Window";
@@ -118,28 +132,24 @@ void argus_init() {
 	// Malloc the initial grid.
 	lines = 1;
 	columns = 1;
+	offset_width = (float)OFFSET_SIZE/width;
+	offset_height = (float)OFFSET_SIZE/height;
 	current_line = 0;
 	current_column = 0;
 	grid = calloc(1,sizeof(Graph*));
 	if (!grid) {
 		fprintf(stderr, "[ARGUS]: fatal: failed to malloc the buffer for the graph grid !\n");
-		SDL_Quit();
-		IMG_Quit();
 		pthread_mutex_unlock(&argus_mutex);
+		argus_quit();
 		return;
 	}
-	grid[0] = graph_create();
+	grid[0] = graph_create(offset_width, offset_height, 1.0f-2.0f*offset_width, 1.0f-2.0f*offset_height);
 	if (!grid[0]) {
 		fprintf(stderr, "[ARGUS]: fatal: failed to create the graphs of the window !\n");
 		pthread_mutex_unlock(&argus_mutex);
 		argus_quit();
 		return;
 	}
-
-	// Reset the update function informations.
-	update_func = NULL;
-	update_args = NULL;
-	dt = 1.0;
 
 	// Initialization done.
 	static bool atexit_registered = false;
@@ -157,13 +167,17 @@ void argus_quit() {
 	CHECK_INIT(init, argus_mutex);
 	
 	// Frees the argus variables.
-	if (context) SDL_GL_DeleteContext(context);
-	if (window) SDL_DestroyWindow(window);
 	if (grid) {
 		for (int i = 0; i < lines*columns; ++i)
 			if (grid[i]) graph_free(grid[i]);
 		free(grid);
 	}
+	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
+		if (shaders[i]) shader_free(shaders[i]);
+		shaders[i] = NULL;
+	}
+	if (context) SDL_GL_DeleteContext(context);
+	if (window) SDL_DestroyWindow(window);
 
 	// Quits the SDL. 
 	TTF_Quit();
@@ -175,9 +189,17 @@ void argus_quit() {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+
+
+
+
+////////////////////////////////////////////////////////////////
+//                         Setters                            //
+////////////////////////////////////////////////////////////////
+
 /// @brief Resizes the Argus window.
-/// @param w width of the window.
-/// @param h height of the window.
+/// @param w Width of the window.
+/// @param h Height of the window.
 /// @note If w or h is negative or null, the default window size will be used (640*480). 
 /// @note This function sets the current graph to (0,0)
 void argus_set_window_size(int w, int h) {
@@ -193,7 +215,7 @@ void argus_set_window_size(int w, int h) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the graph grid dimensions
+/// @brief Sets the graph grid dimensions.
 /// @param w Number of columns.
 /// @param h Number of lines.
 /// This function sets the dimensions of the graph grid in the window.
@@ -210,17 +232,21 @@ void argus_set_graph_grid(int w, int h) {
 		fprintf(stderr, "[ARGUS]: warning: number of lines lower than 1. Will be set to 1.\n");
 		h = 1;
 	}
-	lines = h;
-	columns = w;
-	current_line = 0;
-	current_column = 0;
 
-	// Malloc the new grid.
+	// Clears the old
 	if (grid) {
 		for (int i = 0; i < lines*columns; ++i)
 			if (grid[i]) graph_free(grid[i]);
 		free(grid);
 	}
+
+	// Malloc the new grid.
+	lines = h;
+	columns = w;
+	offset_width = (float)OFFSET_SIZE/width;
+	offset_height = (float)OFFSET_SIZE/height;
+	current_line = 0;
+	current_column = 0;
 	grid = calloc(lines*columns, sizeof(Graph));
 	if (!grid) {
 		fprintf(stderr, "[ARGUS]: fatal: failed to malloc the buffer for the graph grid !\n");
@@ -230,8 +256,16 @@ void argus_set_graph_grid(int w, int h) {
 	}
 
 	// Creates the graphs.
+	float graph_width = (1.0f-offset_width)/columns - offset_width;
+	float graph_height = (1.0f-offset_height)/lines - offset_height;
 	for (int i = 0; i < lines*columns; ++i) {
-		grid[i] = graph_create();
+		int c = i%columns;
+		int l = i/columns;
+		grid[i] = graph_create(
+			offset_width + c*(offset_width+graph_width), 
+			offset_height + l*(offset_width+graph_height),
+			graph_width, graph_height
+		);
 		if (!grid[i]) {
 			fprintf(stderr, "[ARGUS]: fatal: failed to create the graphs of the window !\n");
 			pthread_mutex_unlock(&argus_mutex);
@@ -281,6 +315,14 @@ void argus_set_update_function(void (*func)(void*, double), void *args) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+
+
+
+
+////////////////////////////////////////////////////////////////
+//                    Rendering function                      //
+////////////////////////////////////////////////////////////////
+
 /// @brief Shows a window containing the defined graphs.
 /// @note This function returns only when the created window is closed.
 void argus_show() {
@@ -306,19 +348,48 @@ void argus_show() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	context = SDL_GL_CreateContext(window);
 	if (!context) {
-		fprintf(stderr, "[ARGUS]: Error during OpenGL context creation : %s.\n", SDL_GetError());
-		SDL_DestroyWindow(window);
-		window = NULL;
-		pthread_mutex_unlock(&argus_mutex);
-		return;
+		fprintf(stderr, "[ARGUS]: error: Error during OpenGL context creation : %s.\n", SDL_GetError());
+		goto ARGUS_ERROR_CONTEXT_CREATION;
 	}
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_ALWAYS);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	SDL_GL_SetSwapInterval(0);
 
+	glewExperimental = GL_TRUE; // Active certaines extensions
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "[ARGUS]: error: Failed to initialize GLEW.\n");
+		goto ARGUS_ERROR_CONTEXT_CREATION;
+	}
+
+	// Initializes the shaders.
+	const char *name;
+	const char *vert_source;
+	const char *frag_source;
+	const int *attr_ids;
+	const char **attr_names;
+	int n;
+	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
+		shader_get_sources((ShaderName)i, &name, &vert_source, &frag_source, &attr_ids, &attr_names, &n);
+		shaders[i] = shader_create(vert_source, frag_source, name, attr_ids, attr_names, n);
+		if (!shaders[i]) {
+			fprintf(stderr, "[ARGUS]: error: failed to initializes the shaders !\n");
+			goto ARGUS_ERROR_SHADERS_CREATION;
+		}
+	}
+
 	// Renders the window.
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	for (int i = 0; i < lines*columns; ++i) {
+		if (graph_prepare_graphics(grid[i])) {
+			fprintf(stderr, "[ARGUS]: error: Error during graph preparation : %s.\n", SDL_GetError());
+			goto ARGUS_ERROR_GRAPHS_PREPARATION;
+		}
+		graph_render(grid[i]);
+	}
 	SDL_GL_SwapWindow(window);
-	argus_window_render();
 
 	// Window main loop.
 	bool run = true;
@@ -354,17 +425,30 @@ void argus_show() {
 
 			// Renders the window to update the shown data.
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			argus_window_render();
+			for (int i = 0; i < lines*columns; ++i) {
+				graph_render(grid[i]);
+			}
 			SDL_GL_SwapWindow(window);
-
 		}
 		last_loop = time;
 	}
 
-	// Destroys the windows.
+	// Resets the graphs visual components.
+	for (int i = 0; i < lines*columns; ++i) {
+		graph_reset_graphics(grid[i]);
+	}
+
+	// Frees in case of an error or at the end of the function.
+ARGUS_ERROR_GRAPHS_PREPARATION:
+ARGUS_ERROR_SHADERS_CREATION:
+	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
+		if (shaders[i]) shader_free(shaders[i]);
+		shaders[i] = NULL;
+	}
 	SDL_GL_DeleteContext(context);
-	SDL_DestroyWindow(window);
 	context = NULL;
+ARGUS_ERROR_CONTEXT_CREATION:
+	SDL_DestroyWindow(window);
 	window = NULL;
 	pthread_mutex_unlock(&argus_mutex);
 }
