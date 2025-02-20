@@ -34,4 +34,5 @@ int utf8_len(const char *text) {
 		else text += 2;
 		n++;
 	}
+	return n;
 }

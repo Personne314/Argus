@@ -29,10 +29,41 @@ void main() { \
 }";
 
 /// @brief Attrib identifiers for shape shader.
-static const int shape_attr_ids[] = { 0, 1 };
+static const int shape_attr_ids[] = {0,1};
 
 /// @brief Attrib names for  shape shader.
-static const char *shape_attr_names[] = { "in_coord", "in_color" };
+static const char *shape_attr_names[] = {"in_coord","in_color"};
+
+
+// Text shader data.
+/// @brief Text vertex shader source. 
+static const char source_text_shader_vert[] = 
+"#version 450 core\n \
+in vec2 in_coord; \
+in vec2 in_tex_coord; \
+out vec2 tex_coord; \
+void main() { \
+	gl_Position = vec4(-1+2*in_coord.x, 1-2*in_coord.y, 0.0, 1.0); \
+	tex_coord = in_tex_coord; \
+}";
+
+/// @brief Text fragment shader source.
+static const char source_text_shader_frag[] = 
+"#version 450 core\n \
+in vec2 tex_coord; \
+out vec4 out_color; \
+uniform sampler2D tex; \
+uniform vec3 color; \
+void main() { \
+	out_color = vec4(color, 1.0)*texture(tex, tex_coord); \
+}";
+
+/// @brief Attrib identifiers for shape shader.
+static const int text_attr_ids[] = {0,1};
+
+/// @brief Attrib names for  shape shader.
+static const char *text_attr_names[] = {"in_coord","in_tex_coord"};
+
 
 
 // Shader infos.
@@ -48,10 +79,14 @@ struct ShaderInfo {
 typedef struct ShaderInfo ShaderInfo;
 
 /// @brief Shader description array.
-static const ShaderInfo shader_infos[SHADER_LIST_SIZE] = {
+static const ShaderInfo shader_infos[] = {
     [SHADER_SHAPE] = {
 		"shape", source_shape_shader_vert, source_shape_shader_frag,
 		shape_attr_ids, shape_attr_names, 2
+	},
+	[SHADER_TEXT] = {
+		"text", source_text_shader_vert, source_text_shader_frag,
+		text_attr_ids, text_attr_names, 2
 	}
 };
 

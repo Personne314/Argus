@@ -8,6 +8,7 @@
 /// @brief List of constants that represents each shader.
 enum ShaderName {
 	SHADER_SHAPE,
+	SHADER_TEXT,
 	SHADER_LIST_SIZE
 };
 typedef enum ShaderName ShaderName;

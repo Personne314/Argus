@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 
 #include "vao.h"
-#include "rect.h"
+#include "structs.h"
 
 
 

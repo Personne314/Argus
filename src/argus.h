@@ -1,5 +1,8 @@
 #pragma once
 
+#include "structs.h"
+
+
 
 ////////////////////////////////////////////////////////////////
 //                       Init functions                       //
@@ -38,6 +41,15 @@ void argus_set_update_function(void (*func)(void*, double), void *args);
 
 // Sets the current graph title.
 void argus_graph_set_title(const char *graph_title);
+
+// Sets the current graph title color.
+void argus_graph_set_title_color(Color c);
+
+// Sets the current graph background color.
+void argus_graph_set_background_color(Color c);
+
+// Sets the current graph color.
+void argus_graph_set_graph_color(Color c);
 
 
 ////////////////////////////////////////////////////////////////

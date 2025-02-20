@@ -216,7 +216,7 @@ VAO *glyphs_generate_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text) {
 		glyph_rect.x = rect.x;
 		glyph_rect.y = rect.y + 0.5f*(rect.h-glyph_rect.h);
 	} else {
-		glyph_rect.x = rect.x + 0.5f*(rect.w-glyph_rect.w);
+		glyph_rect.x = rect.x + 0.5f*(rect.w-n*glyph_rect.w);
 		glyph_rect.y = rect.y;
 	}
 
@@ -235,33 +235,34 @@ VAO *glyphs_generate_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text) {
 
 	// For each character, adds it to the vertices lists.
 	int c = 0;
-	int offset = 0;
+	int i = 0;
 	while ((c = utf8_iterate(&text))) {
 		const int id = id_from_char(c)&0x000000FF;
 
 		// Upper-left triangle.
-		vertices[offset]	= glyph_rect.x;
-		vertices[offset+1]	= glyph_rect.y;
-		vertices[offset+2]	= glyph_rect.x+0.0625f;
-		vertices[offset+3]	= glyph_rect.y+0.1f;
-		vertices[offset+4]	= glyph_rect.x;
-		vertices[offset+5]	= glyph_rect.y+0.1f;
+		vertices[12*i]		= glyph_rect.x;
+		vertices[12*i+1]	= glyph_rect.y;
+		vertices[12*i+2]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+3]	= glyph_rect.y + glyph_rect.h;
+		vertices[12*i+4]	= glyph_rect.x;
+		vertices[12*i+5]	= glyph_rect.y + glyph_rect.h;
 
 		// Lower-right triangle.
-		vertices[offset+6]	= glyph_rect.x;
-		vertices[offset+7]	= glyph_rect.y;
-		vertices[offset+8]	= glyph_rect.x+0.0625f;
-		vertices[offset+9]	= glyph_rect.y;
-		vertices[offset+10]	= glyph_rect.x+0.0625f;
-		vertices[offset+11]	= glyph_rect.y+0.1f;
+		vertices[12*i+6]	= glyph_rect.x;
+		vertices[12*i+7]	= glyph_rect.y;
+		vertices[12*i+8]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+9]	= glyph_rect.y;
+		vertices[12*i+10]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+11]	= glyph_rect.y + glyph_rect.h;
 
 		// Adds the texture vertices.
-		glyphs_get_vertices(textures, offset, id);
-		offset += 12;
+		glyphs_get_vertices(textures, 12*i, id);
+		glyph_rect.x += glyph_rect.w;
+		++i;
 	}
 
 	// Creates the VAO.
-	void *data[2] = {textures, vertices};
+	void *data[2] = {vertices, textures};
 	int sizes[2] = {2,2};
 	int array_ids[2] = {0,1};
 	int gl_types[2] = {GL_FLOAT, GL_FLOAT};

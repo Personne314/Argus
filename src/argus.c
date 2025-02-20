@@ -145,7 +145,7 @@ void argus_init() {
 		argus_quit();
 		return;
 	}
-	grid[0] = graph_create(width, height, offset_width, offset_height, 1.0f-2.0f*offset_width, 1.0f-2.0f*offset_height);
+	grid[0] = graph_create((Rect){offset_width, offset_height, 1.0f-2.0f*offset_width, 1.0f-2.0f*offset_height});
 	if (!grid[0]) {
 		fprintf(stderr, "[ARGUS]: fatal: failed to create the graphs of the window !\n");
 		pthread_mutex_unlock(&argus_mutex);
@@ -269,12 +269,11 @@ void argus_set_grid_size(int w, int h) {
 	for (int i = 0; i < lines*columns; ++i) {
 		int c = i%columns;
 		int l = i/columns;
-		grid[i] = graph_create(
-			width, height,
+		grid[i] = graph_create((Rect){
 			offset_width + c*(offset_width+graph_width), 
 			offset_height + l*(offset_height+graph_height),
 			graph_width, graph_height
-		);
+		});
 		if (!grid[i]) {
 			fprintf(stderr, "[ARGUS]: fatal: failed to create the graphs of the window !\n");
 			pthread_mutex_unlock(&argus_mutex);
@@ -336,6 +335,30 @@ void argus_set_update_function(void (*func)(void*, double), void *args) {
 /// @param title The title of the graph.
 void argus_graph_set_title(const char *graph_title) {
 	CURRENT_GRAPH->title = graph_title;
+}
+
+/// @brief Sets the current graph title color.
+/// @param c The color to use.
+void argus_graph_set_title_color(Color c) {
+	CURRENT_GRAPH->title_color.r = c.r;
+	CURRENT_GRAPH->title_color.g = c.g;
+	CURRENT_GRAPH->title_color.b = c.b;
+}
+
+/// @brief Sets the current graph background color.
+/// @param c The color to use.
+void argus_graph_set_background_color(Color c) {
+	CURRENT_GRAPH->background_color.r = c.r;
+	CURRENT_GRAPH->background_color.g = c.g;
+	CURRENT_GRAPH->background_color.b = c.b;
+}
+
+/// @brief Sets the current graph color.
+/// @param c The color to use.
+void argus_graph_set_graph_color(Color c) {
+	CURRENT_GRAPH->graph_color.r = c.r;
+	CURRENT_GRAPH->graph_color.g = c.g;
+	CURRENT_GRAPH->graph_color.b = c.b;
 }
 
 
@@ -404,7 +427,7 @@ void argus_show() {
 	}
 
 	// Loads the glyphs set.
-	Glyphs *glyphs = glyphs_create(32);
+	Glyphs *glyphs = glyphs_create(64);
 	if (!glyphs) {
 		fprintf(stderr, "[ARGUS]: error: unable to load the glyphs set !\n");
 		goto ARGUS_ERROR_GLYPHS_CREATION;
@@ -413,11 +436,11 @@ void argus_show() {
 	// Renders the window.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < lines*columns; ++i) {
-		if (graph_prepare_dynamic(grid[i])) {
-			fprintf(stderr, "[ARGUS]: error: Error during graph preparation : %s.\n", SDL_GetError());
+		if (graph_prepare_static(grid[i], glyphs, width, height) || graph_prepare_dynamic(grid[i])) {
+			fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 			goto ARGUS_ERROR_GRAPHS_PREPARATION;
 		}
-		graph_render(grid[i]);
+		graph_render(grid[i], glyphs);
 	}
 	SDL_GL_SwapWindow(window);
 
@@ -456,20 +479,22 @@ void argus_show() {
 			// Renders the window to update the shown data.
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			for (int i = 0; i < lines*columns; ++i) {
-				graph_render(grid[i]);
+				if (graph_prepare_dynamic(grid[i])) {
+					fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
+					goto ARGUS_ERROR_GRAPHS_PREPARATION;
+				}
+				graph_render(grid[i], glyphs);
 			}
 			SDL_GL_SwapWindow(window);
 		}
 		last_loop = time;
 	}
 
-	// Resets the graphs visual components.
+	// Frees in case of an error or at the end of the function.
+ARGUS_ERROR_GRAPHS_PREPARATION:
 	for (int i = 0; i < lines*columns; ++i) {
 		graph_reset_graphics(grid[i]);
 	}
-
-	// Frees in case of an error or at the end of the function.
-ARGUS_ERROR_GRAPHS_PREPARATION:
 	glyphs_free(glyphs);
 ARGUS_ERROR_GLYPHS_CREATION:
 ARGUS_ERROR_SHADERS_CREATION:
