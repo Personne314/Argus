@@ -19,7 +19,7 @@ int utf8_iterate(const char **text) {
 		++*text;
 		unsigned char c2 = **text;
 		++*text;
-		return (c+(c2<<8))&0x0000FFFF;
+		return (c2+(c<<8))&0x0000FFFF;
 	}
 }
 
