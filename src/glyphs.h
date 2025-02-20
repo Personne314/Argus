@@ -24,5 +24,8 @@ void glyphs_free(Glyphs *glyphs);
 // Binds the texture of the glyphs.
 void glyphs_bind(Glyphs *glyphs);
 
-// Create a rect to render a text in a rect.
+//  Creates a VAO to render a text in a given rect.
 VAO *glyphs_generate_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text);
+
+// Creates a VAO to render a vertical text in a given rect.
+VAO *glyphs_generate_vertical_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text);

@@ -194,7 +194,7 @@ void glyphs_get_vertices(float *vertices, int offset, int id) {
 
 }
 
-/// @brief Create a rect to render a text in a rect.
+/// @brief Creates a VAO to render a text in a given rect.
 /// @param glyphs The glyphs set to use.
 /// @param p_rect Pointer on the rect that will contains the text.
 /// @param text The text to render.
@@ -258,6 +258,89 @@ VAO *glyphs_generate_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text) {
 		// Adds the texture vertices.
 		glyphs_get_vertices(textures, 12*i, id);
 		glyph_rect.x += glyph_rect.w;
+		++i;
+	}
+
+	// Creates the VAO.
+	void *data[2] = {vertices, textures};
+	int sizes[2] = {2,2};
+	int array_ids[2] = {0,1};
+	int gl_types[2] = {GL_FLOAT, GL_FLOAT};
+	VAO *vao = vao_create(data, sizes, array_ids, gl_types, 6*n, 2);
+	free(vertices);
+	free(textures);
+	if (!vao) {
+		fprintf(stderr, "[ARGUS]: error: unable to create a VAO for the text '%s' !\n", text);	
+		return NULL;
+	}
+	return vao;
+}
+
+/// @brief Creates a VAO to render a vertical text in a given rect.
+/// @param glyphs The glyphs set to use.
+/// @param p_rect Pointer on the rect that will contains the text.
+/// @param text The text to render.
+/// @return A VAO containing data to render the text using the texture in glyphs.
+VAO *glyphs_generate_vertical_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text) {
+
+	// Initialize the rects.
+	Rect rect = *p_rect;
+	Rect glyph_rect = RECT_INIT;
+	glyph_rect.h = rect.w*glyphs->ratio;
+	glyph_rect.w = rect.w;
+
+	// Calculates the size and the position of the glyphs.
+	const int n = utf8_len(text);
+	const float exceeding = n*glyph_rect.h/rect.h;
+	if (exceeding > 1.0f) {
+		glyph_rect.w /= exceeding;
+		glyph_rect.h /= exceeding;
+		glyph_rect.x = rect.x + 0.5f*(rect.w-glyph_rect.w);
+		glyph_rect.y = rect.y;
+	} else {
+		glyph_rect.x = rect.x;
+		glyph_rect.y = rect.y + 0.5f*(rect.h-n*glyph_rect.h);
+	}
+	glyph_rect.y += (n-1)*glyph_rect.h; 
+
+	// Malloc for the vertices buffers.
+	float *vertices = malloc(12*n*sizeof(float));
+	if (!vertices) {
+		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the vertices of a text VAO !\n");
+		return NULL;
+	}
+	float *textures = malloc(12*n*sizeof(float));
+	if (!textures) {
+		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the texture vertices of a text VAO !\n");
+		free(vertices);
+		return NULL;
+	}
+
+	// For each character, adds it to the vertices lists.
+	int c = 0;
+	int i = 0;
+	while ((c = utf8_iterate(&text))) {
+		const int id = id_from_char(c)&0x000000FF;
+
+		// Upper-left triangle.
+		vertices[12*i]		= glyph_rect.x;
+		vertices[12*i+1]	= glyph_rect.y + glyph_rect.h;
+		vertices[12*i+2]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+3]	= glyph_rect.y;
+		vertices[12*i+4]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+5]	= glyph_rect.y + glyph_rect.h;
+
+		// Lower-right triangle.
+		vertices[12*i+6]	= glyph_rect.x;
+		vertices[12*i+7]	= glyph_rect.y + glyph_rect.h;
+		vertices[12*i+8]	= glyph_rect.x;
+		vertices[12*i+9]	= glyph_rect.y;
+		vertices[12*i+10]	= glyph_rect.x + glyph_rect.w;
+		vertices[12*i+11]	= glyph_rect.y;
+
+		// Adds the texture vertices.
+		glyphs_get_vertices(textures, 12*i, id);
+		glyph_rect.y -= glyph_rect.h;
 		++i;
 	}
 
