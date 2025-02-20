@@ -7,12 +7,13 @@
 
 
 
-Graph *graph_create(int window_width, int window_height, float x, float y, float w, float h) {
+Graph *graph_create(Glyphs *glyphs,int window_width, int window_height, float x, float y, float w, float h) {
 	Graph *graph = malloc(sizeof(Graph));
 	if (!graph) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph");
 		return NULL;
 	}
+	graph->glyphs = glyphs;
 	graph->x = x;
 	graph->y = y;
 	graph->w = w;

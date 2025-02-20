@@ -11,6 +11,7 @@
 
 #include "graph.h"
 #include "shader.h"
+#include "glyphs.h"
 
 
 #define OFFSET_SIZE 10
@@ -26,8 +27,8 @@ static bool init = false;
 // Argus window components.
 static SDL_Window *window;		///< SDL window used to display the graphs.
 static SDL_GLContext context;	///< OpenGL context for the rendering process.
-static int width;	///< Width of the window.
-static int height;	///< Height of the window.
+static int width;			///< Width of the window.
+static int height;			///< Height of the window.
 static const char *title;	///< Title of the window.
 
 // Array of graphs to display in the window.
@@ -35,7 +36,7 @@ static int lines;			///< Number of lines in the graph grid.
 static int columns;			///< Number of columns in the graph grid.
 static int current_line;	///< Current graph line.
 static int current_column;	///< Current graph column.
-static float offset_width;		///< Width of the offsets between each graph.
+static float offset_width;	///< Width of the offsets between each graph.
 static float offset_height;	///< Height of the offsets between each graph.
 static Graph **grid;		///< Graphs grid.
 
@@ -402,6 +403,13 @@ void argus_show() {
 		}
 	}
 
+	// Loads the glyphs set.
+	Glyphs *glyphs = glyphs_create(32);
+	if (!glyphs) {
+		fprintf(stderr, "[ARGUS]: error: unable to load the glyphs set !\n");
+		goto ARGUS_ERROR_GLYPHS_CREATION;
+	}
+
 	// Renders the window.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < lines*columns; ++i) {
@@ -462,6 +470,8 @@ void argus_show() {
 
 	// Frees in case of an error or at the end of the function.
 ARGUS_ERROR_GRAPHS_PREPARATION:
+	glyphs_free(glyphs);
+ARGUS_ERROR_GLYPHS_CREATION:
 ARGUS_ERROR_SHADERS_CREATION:
 	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
 		if (shaders[i]) shader_free(shaders[i]);
