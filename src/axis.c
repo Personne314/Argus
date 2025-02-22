@@ -18,9 +18,6 @@ void axis_prepare_x_vao(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_wid
 	int n = 0;
 	if (axis->title && strlen(axis->title)) {
 		Rect text_rect = {rect.x+dx, rect.y, rect.w/2-2*dx, rect.h};
-
-		printf("%f %f %f %f\n", text_rect.x*window_width, text_rect.y*window_height, text_rect.w*window_width, text_rect.h*window_height);
-
 		if (glyphs_generate_vertical_text_buffers(glyphs, &text_rect, axis->title, 
 			(float)window_width/window_height, &vertices, &textures, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to generate the buffers of data for the x axis title of a graph !\n");

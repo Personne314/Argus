@@ -26,6 +26,7 @@ Graph *graph_create(Rect rect) {
 	graph->title_color = COLOR_WHITE;
 	graph->text_color = COLOR_BLACK;
 	graph->background_vao = NULL;
+	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
 	return graph;
@@ -36,6 +37,7 @@ Graph *graph_create(Rect rect) {
 void graph_free(Graph *graph) {
 	if (graph->background_vao) vao_free(graph->background_vao);
 	if (graph->title_vao) vao_free(graph->title_vao);
+	if (graph->grid_vao) vao_free(graph->grid_vao);
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
 	free(graph);
@@ -48,12 +50,11 @@ void graph_free(Graph *graph) {
 /// @param window_height The height of the window.
 /// @return true if there was an error.
 bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
+	bool is_x_title = graph->x_axis.title && strlen(graph->x_axis.title);
+	bool is_y_title = graph->y_axis.title && strlen(graph->y_axis.title);
 	const float dx = 5.0f/window_width;
 	const float dy = 5.0f/window_height;
 	const float text_height = 30.0f;
-
-	bool is_x_title = graph->x_axis.title && strlen(graph->x_axis.title);
-	bool is_y_title = graph->y_axis.title && strlen(graph->y_axis.title);
 
 	// Calculates the rects of the components.
 	Rect title_rect = {
