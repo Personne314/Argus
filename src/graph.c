@@ -15,13 +15,16 @@
 Graph *graph_create(Rect rect) {
 	Graph *graph = malloc(sizeof(Graph));
 	if (!graph) {
-		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph");
+		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph\n");
 		return NULL;
 	}
+	graph->x_axis = AXIS_INIT;
+	graph->y_axis = AXIS_INIT;
 	graph->rect = rect;
 	graph->background_color = COLOR_GRAY3;
 	graph->graph_color = COLOR_GRAY9;
 	graph->title_color = COLOR_WHITE;
+	graph->text_color = COLOR_BLACK;
 	graph->background_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
@@ -33,6 +36,8 @@ Graph *graph_create(Rect rect) {
 void graph_free(Graph *graph) {
 	if (graph->background_vao) vao_free(graph->background_vao);
 	if (graph->title_vao) vao_free(graph->title_vao);
+	axis_reset_graphics(&graph->x_axis);
+	axis_reset_graphics(&graph->y_axis);
 	free(graph);
 }
 
@@ -45,15 +50,30 @@ void graph_free(Graph *graph) {
 bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
 	const float dx = 5.0f/window_width;
 	const float dy = 5.0f/window_height;
+	const float text_height = 30.0f;
+
+	bool is_x_title = graph->x_axis.title && strlen(graph->x_axis.title);
+	bool is_y_title = graph->y_axis.title && strlen(graph->y_axis.title);
 
 	// Calculates the rects of the components.
 	Rect title_rect = {
 		graph->rect.x+dx, graph->rect.y+dy, 
-		graph->rect.w-2*dx, 25.0f/window_height-2*dx
+		graph->rect.w-2*dx, text_height/window_height-2*dy
 	};
 	Rect graph_rect = {
-		graph->rect.x+dx, graph->rect.y+25.0f/window_height+dy, 
-		graph->rect.w-2*dx, graph->rect.h-25.0f/window_height-2*dy
+		graph->rect.x+dx, graph->rect.y+text_height/window_height+1*dy, 
+		graph->rect.w-2*dx, graph->rect.h-text_height/window_height-2*dy
+	};
+	float y_axis_height = text_height/window_height * (is_y_title ? 2 : 1);
+	if (is_y_title) y_axis_height -= dy;
+	Rect y_axis_rect = {
+		graph_rect.x+dx, graph_rect.y+graph_rect.h-y_axis_height, 
+		graph_rect.w-2*dx, y_axis_height
+	};
+	float x_axis_width = text_height/window_width * (is_x_title ? 2 : 1);
+	Rect x_axis_rect = {
+		graph_rect.x, graph_rect.y+dy, 
+		x_axis_width, graph_rect.h-2*dy
 	};
 
 	// Creates the text VAO for the graph title.
@@ -62,12 +82,24 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		graph_rect.h = graph->rect.h-2*dy;
 		graph->title_vao = NULL;
 	} else {
-		graph->title_vao = glyphs_generate_text_vao(glyphs, &title_rect, graph->title);
+		int n;
+		float *vertices;
+		float *textures;
+		if (glyphs_generate_text_buffers(glyphs, &title_rect, graph->title, 
+			(float)window_width/window_height, &vertices, &textures, &n)) {
+			fprintf(stderr, "[ARGUS]: error: unable to create buffer to store the data of the title of a graph !\n");
+			return true;
+		}
+		graph->title_vao = glyphs_generate_text_vao(vertices, textures, n);
 		if (!graph->title_vao) {
 			fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the title of a graph !\n");
 			return true;
 		}
 	}
+
+	// Prepares the axis VAOs.
+	axis_prepare_x_vao(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height);
+	axis_prepare_y_vao(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height);
 
 	// Initializes the vertices for the background part.
 	float vertices[24] = {
@@ -125,6 +157,8 @@ bool graph_prepare_dynamic(Graph *graph) {
 /// @brief Frees the graphics components a the end of the render.
 /// @param graph The graph to reset.
 void graph_reset_graphics(Graph *graph) {
+	axis_reset_graphics(&graph->x_axis);
+	axis_reset_graphics(&graph->y_axis);
 	if (graph->background_vao) vao_free(graph->background_vao);
 	if (graph->title_vao) vao_free(graph->title_vao);
 	graph->background_vao = NULL;
@@ -137,4 +171,6 @@ void graph_reset_graphics(Graph *graph) {
 void graph_render(Graph *graph, Glyphs *glyphs) {
 	render_shape(graph->background_vao, 1.0f);
 	render_text(glyphs, graph->title_vao, graph->title_color);
+	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
+	render_text(glyphs, graph->y_axis.title_vao, graph->text_color);
 }

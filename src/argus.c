@@ -361,6 +361,24 @@ void argus_graph_set_graph_color(Color c) {
 	CURRENT_GRAPH->graph_color.b = c.b;
 }
 
+/// @brief Sets the current graph x axis title.
+/// @param axis_title The title of the graph x axis.
+void argus_graph_set_x_title(const char *axis_title) {
+	CURRENT_GRAPH->x_axis.title = axis_title;
+}
+
+/// @brief Sets the current graph y axis title.
+/// @param axis_title The title of the graph y axis.
+void argus_graph_set_y_title(const char *axis_title) {
+	CURRENT_GRAPH->y_axis.title = axis_title;
+}
+
+/// @brief Sets the current graph text color.
+/// @param c The color to use.
+void argus_graph_set_text_color(Color c) {
+	CURRENT_GRAPH->text_color = c;
+}
+
 
 
 

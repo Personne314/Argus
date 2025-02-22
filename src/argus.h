@@ -51,6 +51,15 @@ void argus_graph_set_background_color(Color c);
 // Sets the current graph color.
 void argus_graph_set_graph_color(Color c);
 
+// Sets the current graph x axis title.
+void argus_graph_set_x_title(const char *axis_title);
+
+// Sets the current graph y axis title.
+void argus_graph_set_y_title(const char *axis_title);
+
+// Sets the current graph text color.
+void argus_graph_set_text_color(Color c);
+
 
 ////////////////////////////////////////////////////////////////
 //                    Rendering function                      //

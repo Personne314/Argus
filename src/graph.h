@@ -6,15 +6,19 @@
 #include "shader.h"
 #include "glyphs.h"
 #include "structs.h"
+#include "axis.h"
 
 
 
 /// @brief Constains all the components to render a graph.
 struct Graph {
-	Rect rect;	// The rect of the graph.
+	Axis x_axis;	// X Axis.
+	Axis y_axis;	// Y Axis.
+	Rect rect;		// The rect of the graph.
 	Color background_color;	// The color of the background of the graph.
 	Color graph_color;		// The color of the graph.
 	Color title_color;		// The color of the title of the graph.
+	Color text_color;		// The color of all of the texts in the graph.
 	VAO *background_vao;	// VAO for the background of the graph.
 	VAO *title_vao;		// VAO for the graph title.
 	const char *title;	// The graph title.

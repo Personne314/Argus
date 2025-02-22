@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <GL/glew.h>
+#include <stdbool.h>
 
 #include "vao.h"
 #include "structs.h"
@@ -24,8 +25,13 @@ void glyphs_free(Glyphs *glyphs);
 // Binds the texture of the glyphs.
 void glyphs_bind(Glyphs *glyphs);
 
-//  Creates a VAO to render a text in a given rect.
-VAO *glyphs_generate_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text);
+// Creates buffers containing data to render a text in a given rect.
+bool glyphs_generate_text_buffers(Glyphs *glyphs, Rect *p_rect, 
+const char *text, float screen_ratio, float **vertices, float **textures, int *n);
 
-// Creates a VAO to render a vertical text in a given rect.
-VAO *glyphs_generate_vertical_text_vao(Glyphs *glyphs, Rect *p_rect, const char *text);
+// Creates buffers containing data to render a vertical text in a given rect.
+bool glyphs_generate_vertical_text_buffers(Glyphs *glyphs, Rect *p_rect,  
+const char *text, float screen_ratio, float **vertices, float **textures, int *n);
+
+// Generates a VAO from buffers to render text.
+VAO *glyphs_generate_text_vao(float *vertices, float *textures, int nb_char);

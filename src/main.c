@@ -14,6 +14,8 @@ int main(int argc, char *argv[]) {
 
 	argus_set_current_graph(1,1);
 	argus_graph_set_title("Elément numéro 4");
+	argus_graph_set_x_title("Amplitude (mV)");
+	argus_graph_set_y_title("Temps (ms)");
 
 	argus_show();
 
