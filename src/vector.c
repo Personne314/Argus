@@ -9,7 +9,7 @@
 /// @brief Creates a vector of initial capacity cap.
 /// @param cap The initial capacity of the vector. cap >= 1.
 /// @return The created vector.
-Vector *create_vector(int cap) {
+Vector *vector_create(int cap) {
 
 	// Malloc the vector structure.
 	Vector *vector = malloc(sizeof(Vector));
@@ -115,13 +115,6 @@ void vector_print(Vector *vector) {
 	}
 	putchar('}');
 	putchar('\n');
-}
-
-/// @brief Sorts the vector elements.
-/// @param vector The vector to sort.
-/// @param cmp The comparison function to use.
-void vector_sort(Vector *vector, int (*cmp)(const void *a, const void *b)) {
-	qsort(vector->data, vector->size, sizeof(void*), cmp);
 }
 
 /// @brief Clears the vector.

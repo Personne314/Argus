@@ -31,7 +31,7 @@ void main() { \
 /// @brief Attrib identifiers for shape shader.
 static const int shape_attr_ids[] = {0,1};
 
-/// @brief Attrib names for  shape shader.
+/// @brief Attrib names for shape shader.
 static const char *shape_attr_names[] = {"in_coord","in_color"};
 
 
@@ -58,12 +58,36 @@ void main() { \
 	out_color = vec4(color, 1.0)*texture(tex, tex_coord); \
 }";
 
-/// @brief Attrib identifiers for shape shader.
+/// @brief Attrib identifiers for text shader.
 static const int text_attr_ids[] = {0,1};
 
-/// @brief Attrib names for  shape shader.
+/// @brief Attrib names for text shader.
 static const char *text_attr_names[] = {"in_coord","in_tex_coord"};
 
+
+// Curve shader data.
+/// @brief Curve vertex shader source. 
+static const char source_curve_shader_vert[] = 
+"#version 450 core\n \
+in vec2 in_coord; \
+void main() { \
+	gl_Position = vec4(-1+2*in_coord.x, 1-2*in_coord.y, 0.0, 1.0); \
+}";
+
+/// @brief Curve fragment shader source.
+static const char source_curve_shader_frag[] = 
+"#version 450 core\n \
+out vec4 out_color; \
+uniform vec3 frag_color; \
+void main() { \
+	out_color = vec4(frag_color, 1); \
+}";
+
+/// @brief Attrib identifiers for curve shader.
+static const int curve_attr_ids[] = {0};
+
+/// @brief Attrib names for curve shader.
+static const char *curve_attr_names[] = {"in_coord"};
 
 
 // Shader infos.
@@ -87,6 +111,10 @@ static const ShaderInfo shader_infos[] = {
 	[SHADER_TEXT] = {
 		"text", source_text_shader_vert, source_text_shader_frag,
 		text_attr_ids, text_attr_names, 2
+	},
+	[SHADER_CURVE] = {
+		"text", source_curve_shader_vert, source_curve_shader_frag,
+		curve_attr_ids, curve_attr_names, 1
 	}
 };
 

@@ -35,3 +35,14 @@ void render_shape(VAO *vao, float transparency) {
 		vao_bind(NULL);
 	shader_use(NULL);
 }
+
+/// @brief Renders a curve from a VAO with a given transparency.
+/// @param vao VAO of the curve to render.
+void render_curve(VAO *vao) {
+	if (!vao) return;
+	shader_use(shaders[SHADER_CURVE]);
+		vao_bind(vao);
+			glDrawArrays(GL_LINES, 0, vao->size);
+		vao_bind(NULL);
+	shader_use(NULL);
+}

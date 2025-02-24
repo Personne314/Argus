@@ -21,16 +21,16 @@ Vector *vector_create(int cap);
 void vector_free(Vector *vector);
 
 // Adds an element at the end of the vector.
-void vector_push_back(Vector *vector, void *val);
+void vector_push_back(Vector *vector, float val);
 
 // Set the value of an element in a vector.
-void vector_set(Vector *vector, int id, void *val);
+void vector_set(Vector *vector, int id, float val);
 
 // Gets a value from a vector.
-void *vector_at(Vector *vector, int id);
+float vector_at(Vector *vector, int id);
 
 // Gets the last element of a vector.
-void *vector_back(Vector *vector);
+float vector_back(Vector *vector);
 
 // Returns the vector size.
 int vector_size(Vector *vector);
@@ -43,9 +43,6 @@ bool vector_empty(Vector *vector);
 
 // Prints the vector into stdout.
 void vector_print(Vector *vector);
-
-// Sorts the vector elements.
-void vector_sort(Vector *vector, int (*cmp)(const void *a, const void *b));
 
 // Clears the vector.
 void vector_clear(Vector *vector);

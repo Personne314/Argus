@@ -6,6 +6,7 @@
 
 #include "structs.h"
 #include "render.h"
+#include "grid.h"
 
 
 
@@ -65,17 +66,6 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		graph->rect.x+dx, graph->rect.y+text_height/window_height+1*dy, 
 		graph->rect.w-2*dx, graph->rect.h-text_height/window_height-2*dy
 	};
-	float y_axis_height = text_height/window_height * (is_y_title ? 2 : 1);
-	if (is_y_title) y_axis_height -= dy;
-	Rect y_axis_rect = {
-		graph_rect.x+dx, graph_rect.y+graph_rect.h-y_axis_height, 
-		graph_rect.w-2*dx, y_axis_height
-	};
-	float x_axis_width = text_height/window_width * (is_x_title ? 2 : 1);
-	Rect x_axis_rect = {
-		graph_rect.x, graph_rect.y+dy, 
-		x_axis_width, graph_rect.h-2*dy
-	};
 
 	// Creates the text VAO for the graph title.
 	if (!graph->title || !strlen(graph->title)) {
@@ -98,9 +88,33 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		}
 	}
 
+	// Calculate the rects of the axis.
+	float y_axis_height = text_height/window_height * (is_y_title ? 2 : 1);
+	if (is_y_title) y_axis_height -= dy;
+	Rect y_axis_rect = {
+		graph_rect.x+dx, graph_rect.y+graph_rect.h-y_axis_height, 
+		graph_rect.w-2*dx, y_axis_height
+	};
+	float x_axis_width = text_height/window_width * (is_x_title ? 2 : 1);
+	Rect x_axis_rect = {
+		graph_rect.x, graph_rect.y+dy, 
+		x_axis_width, graph_rect.h-2*dy
+	};
+	x_axis_rect.h -= y_axis_rect.h;
+	y_axis_rect.w -= x_axis_rect.w;
+	y_axis_rect.x += x_axis_rect.w;
+	
+
+	// Calculate the rect of the grid.
+	Rect grid_rect = {
+		x_axis_rect.x+x_axis_rect.w,x_axis_rect.y,
+		y_axis_rect.w, x_axis_rect.h 
+	};
+
 	// Prepares the axis VAOs.
 	axis_prepare_x_vao(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height);
 	axis_prepare_y_vao(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height);
+	grid_prepare_graphics(&graph->grid_vao, &graph->x_axis, &graph->y_axis, &grid_rect);
 
 	// Initializes the vertices for the background part.
 	float vertices[24] = {
@@ -174,4 +188,5 @@ void graph_render(Graph *graph, Glyphs *glyphs) {
 	render_text(glyphs, graph->title_vao, graph->title_color);
 	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.title_vao, graph->text_color);
+	render_curve(graph->grid_vao);
 }

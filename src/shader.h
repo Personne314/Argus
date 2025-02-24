@@ -9,6 +9,7 @@
 enum ShaderName {
 	SHADER_SHAPE,
 	SHADER_TEXT,
+	SHADER_CURVE,
 	SHADER_LIST_SIZE
 };
 typedef enum ShaderName ShaderName;

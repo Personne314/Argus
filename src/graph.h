@@ -19,7 +19,7 @@ struct Graph {
 	Color graph_color;		// The color of the graph.
 	Color title_color;		// The color of the title of the graph.
 	Color text_color;		// The color of all of the texts in the graph.
-	VAO *grid_vao;	// VAO for the grid of the graph.
+	VAO *grid_vao;		// VAO for the grid of the graph.
 	VAO *background_vao;	// VAO for the background of the graph.
 	VAO *title_vao;		// VAO for the graph title.
 	const char *title;	// The graph title.
