@@ -15,6 +15,7 @@ struct Graph {
 	Axis x_axis;	// X Axis.
 	Axis y_axis;	// Y Axis.
 	Rect rect;		// The rect of the graph.
+	Rect grid_rect;	// The rect of the grid of the graph.
 	Color background_color;	// The color of the background of the graph.
 	Color graph_color;		// The color of the graph.
 	Color title_color;		// The color of the title of the graph.
@@ -37,7 +38,7 @@ void graph_free(Graph *graph);
 bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int window_height);
 
 // Prepares the dynamic graphical components of a graph.
-bool graph_prepare_dynamic(Graph *graph);
+bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height);
 
 // Frees the graphics components a the end of the render.
 void graph_reset_graphics(Graph *graph);

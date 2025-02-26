@@ -334,49 +334,63 @@ void argus_set_update_function(void (*func)(void*, double), void *args) {
 /// @brief Sets the current graph title.
 /// @param title The title of the graph.
 void argus_graph_set_title(const char *graph_title) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->title = graph_title;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph title color.
 /// @param c The color to use.
 void argus_graph_set_title_color(Color c) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->title_color.r = c.r;
 	CURRENT_GRAPH->title_color.g = c.g;
 	CURRENT_GRAPH->title_color.b = c.b;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph background color.
 /// @param c The color to use.
 void argus_graph_set_background_color(Color c) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->background_color.r = c.r;
 	CURRENT_GRAPH->background_color.g = c.g;
 	CURRENT_GRAPH->background_color.b = c.b;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph color.
 /// @param c The color to use.
 void argus_graph_set_graph_color(Color c) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->graph_color.r = c.r;
 	CURRENT_GRAPH->graph_color.g = c.g;
 	CURRENT_GRAPH->graph_color.b = c.b;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph x axis title.
 /// @param axis_title The title of the graph x axis.
 void argus_graph_set_x_title(const char *axis_title) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->x_axis.title = axis_title;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph y axis title.
 /// @param axis_title The title of the graph y axis.
 void argus_graph_set_y_title(const char *axis_title) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->y_axis.title = axis_title;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the current graph text color.
 /// @param c The color to use.
 void argus_graph_set_text_color(Color c) {
+	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->text_color = c;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 
@@ -454,7 +468,8 @@ void argus_show() {
 	// Renders the window.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < lines*columns; ++i) {
-		if (graph_prepare_static(grid[i], glyphs, width, height) || graph_prepare_dynamic(grid[i])) {
+		if (graph_prepare_static(grid[i], glyphs, width, height) || 
+			graph_prepare_dynamic(grid[i], glyphs, width, height)) {
 			fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 			goto ARGUS_ERROR_GRAPHS_PREPARATION;
 		}
@@ -497,7 +512,7 @@ void argus_show() {
 			// Renders the window to update the shown data.
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			for (int i = 0; i < lines*columns; ++i) {
-				if (graph_prepare_dynamic(grid[i])) {
+				if (graph_prepare_dynamic(grid[i], glyphs, width, height)) {
 					fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 					goto ARGUS_ERROR_GRAPHS_PREPARATION;
 				}

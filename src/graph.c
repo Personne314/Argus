@@ -22,6 +22,7 @@ Graph *graph_create(Rect rect) {
 	graph->x_axis = AXIS_INIT;
 	graph->y_axis = AXIS_INIT;
 	graph->rect = rect;
+	graph->grid_rect = RECT_INIT;
 	graph->background_color = COLOR_GRAY3;
 	graph->graph_color = COLOR_GRAY9;
 	graph->title_color = COLOR_WHITE;
@@ -30,6 +31,10 @@ Graph *graph_create(Rect rect) {
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
+	graph->x_axis.min = 0.45;
+	graph->y_axis.min = 0.5;
+	graph->x_axis.max = 2.6;
+	graph->y_axis.max = 1.9;
 	return graph;
 }
 
@@ -39,6 +44,9 @@ void graph_free(Graph *graph) {
 	if (graph->background_vao) vao_free(graph->background_vao);
 	if (graph->title_vao) vao_free(graph->title_vao);
 	if (graph->grid_vao) vao_free(graph->grid_vao);
+	graph->background_vao = NULL;
+	graph->title_vao = NULL;
+	graph->grid_vao = NULL;
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
 	free(graph);
@@ -103,18 +111,16 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	x_axis_rect.h -= y_axis_rect.h;
 	y_axis_rect.w -= x_axis_rect.w;
 	y_axis_rect.x += x_axis_rect.w;
-	
 
 	// Calculate the rect of the grid.
-	Rect grid_rect = {
+	graph->grid_rect = (Rect){
 		x_axis_rect.x+x_axis_rect.w,x_axis_rect.y,
 		y_axis_rect.w, x_axis_rect.h 
 	};
 
 	// Prepares the axis VAOs.
-	axis_prepare_x_vao(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height);
-	axis_prepare_y_vao(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height);
-	grid_prepare_graphics(&graph->grid_vao, &graph->x_axis, &graph->y_axis, &grid_rect);
+	axis_prepare_x_title(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height);
+	axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height);
 
 	// Initializes the vertices for the background part.
 	float vertices[24] = {
@@ -165,8 +171,15 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 /// @param graph The graph to prepare.
 /// @note This has to be called before each graph_render call.
 /// @return true if there was an error.
-bool graph_prepare_dynamic(Graph *graph) {
+bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
+
+	// Prepares the grid VAO.
+	if (grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
+		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph !\n");
+		return true;
+	}
 	return false;
+
 }
 
 /// @brief Frees the graphics components a the end of the render.
@@ -174,10 +187,12 @@ bool graph_prepare_dynamic(Graph *graph) {
 void graph_reset_graphics(Graph *graph) {
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
+	if (graph->grid_vao) vao_free(graph->grid_vao);
 	if (graph->background_vao) vao_free(graph->background_vao);
 	if (graph->title_vao) vao_free(graph->title_vao);
 	graph->background_vao = NULL;
 	graph->title_vao = NULL;
+	graph->grid_vao = NULL;
 }
 
 /// @brief Renders the graph.
@@ -189,4 +204,6 @@ void graph_render(Graph *graph, Glyphs *glyphs) {
 	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.title_vao, graph->text_color);
 	render_curve(graph->grid_vao);
+	render_text(glyphs, graph->x_axis.axis_vao, graph->text_color);
+	render_text(glyphs, graph->y_axis.axis_vao, graph->text_color);
 }

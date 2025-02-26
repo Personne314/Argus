@@ -1,8 +1,10 @@
 #pragma once
 
-#include "vao.h"
-#include "axis.h"
+#include <stdbool.h>
+
+#include "graph.h"
+#include "glyphs.h"
 
 
-
-void grid_prepare_graphics(VAO **vao, Axis *x_axis, Axis *y_axis, Rect *p_grid_rect);
+// Prepares the VAO for the grid.
+bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height);
