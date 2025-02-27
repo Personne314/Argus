@@ -2,6 +2,7 @@
 
 
 
+/// @struct Rect
 /// @brief Struct used to represent a rectangle aligned with the axis.
 struct Rect {
 	float x;	///< x coordinate.
@@ -15,6 +16,7 @@ typedef struct Rect Rect;
 #define RECT_INIT (Rect){0.0f,0.0f,0.0f,0.0f}
 
 
+/// @struct Color
 /// @brief Struct used to manipulate an rgb formated color. 
 struct Color {
 	float r;	///< Red component.

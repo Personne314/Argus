@@ -4,9 +4,10 @@
 #include "vbo.h"
 
 
-// struct VAO : Permet de gérer un Vertex Buffer Array OpenGL.
+/// @struct VAO
+/// @brief Used to manage an OpenGL VAO.
 struct VAO {
-	GLuint vao_id;	///< OpenGL VBO id.
+	GLuint vao_id;	///< OpenGL VAO id.
 	VBO *vbo;		///< VBO used in the VAO.
 	int size;		///< Number of vectors in the VAO.
 };

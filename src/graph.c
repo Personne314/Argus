@@ -31,9 +31,9 @@ Graph *graph_create(Rect rect) {
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
-	graph->x_axis.min = 0.45;
+	graph->x_axis.min = 0.48;
 	graph->y_axis.min = 0.5;
-	graph->x_axis.max = 2.6;
+	graph->x_axis.max = 2.62;
 	graph->y_axis.max = 1.9;
 	return graph;
 }

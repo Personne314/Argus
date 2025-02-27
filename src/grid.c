@@ -86,19 +86,29 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	for (int i = 0; i < n_y; ++i) {
 		x_coord[8+2*(n_x+i)]	= grid_rect.x;
 		x_coord[8+2*(n_x+i)+1]	= grid_rect.x + grid_rect.w;
-		y_coord[8+2*(n_x+i)]	= grid_rect.y + grid_rect.h * (y_offset+i*dy/y_range);
-		y_coord[8+2*(n_x+i)+1]	= grid_rect.y + grid_rect.h * (y_offset+i*dy/y_range);
+		y_coord[8+2*(n_x+i)]	= grid_rect.y + grid_rect.h - grid_rect.h * (y_offset+i*dy/y_range);
+		y_coord[8+2*(n_x+i)+1]	= grid_rect.y + grid_rect.h - grid_rect.h * (y_offset+i*dy/y_range);
 	}
 
-	// Creates the VAOs.
-	axis_prepare_x_axis(&graph->x_axis, glyphs, grid_rect.y + grid_rect.h, x_range,
-		grid_rect.x + grid_rect.w*x_offset, 
-		min_x_grad, dx, n_x, window_width, window_height, graph->grid_rect.w);
-	axis_prepare_y_axis(&graph->y_axis, glyphs, grid_rect.x, y_range, 
-		grid_rect.y + grid_rect.h*y_offset,
-		min_y_grad, dy, n_y, window_width, window_height, graph->grid_rect.h);
+	// Creates the grid VAO.
 	graph->grid_vao = curve_prepare_vao(x_coord, y_coord, 8+2*(n_x+n_y));
 	free(x_coord);
 	free(y_coord);
+	if (!graph->grid_vao) {
+		fprintf(stderr, "[ARGUS]: error: unable to create a graph grid VAO !\n");
+		return true;
+	}
+
+	// Creates the axis VAOs.
+	if (axis_prepare_x_axis(&graph->x_axis, glyphs, &graph->grid_rect, x_range,
+		grid_rect.x + grid_rect.w*x_offset, min_x_grad, dx, n_x, window_width, window_height)) {
+			fprintf(stderr, "[ARGUS]: error: unable to prepare a graph x axis !\n");
+			return true;
+	}
+	if (axis_prepare_y_axis(&graph->y_axis, glyphs, &graph->grid_rect, y_range, 
+		grid_rect.h*y_offset, min_y_grad, dy, n_y, window_width, window_height)) {
+			fprintf(stderr, "[ARGUS]: error: unable to prepare a graph y axis !\n");
+			return true;
+	}
 	return false;
 }

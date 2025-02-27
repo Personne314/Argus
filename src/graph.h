@@ -10,6 +10,7 @@
 
 
 
+/// @struct Graph
 /// @brief Constains all the components to render a graph.
 struct Graph {
 	Axis x_axis;	// X Axis.

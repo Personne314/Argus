@@ -8,6 +8,7 @@
 
 
 
+/// @struct Glyphs
 /// @brief Used to load and use a font as an atlas of textures.
 struct Glyphs {
 	GLuint texture_id;	///< OpenGL texture id.

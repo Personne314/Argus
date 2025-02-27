@@ -242,17 +242,17 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 
 		// Upper-left triangle.
 		(*vertices)[12*i]		= glyph_rect.x;
-		(*vertices)[12*i+1]	= glyph_rect.y;
-		(*vertices)[12*i+2]	= glyph_rect.x + glyph_rect.w;
-		(*vertices)[12*i+3]	= glyph_rect.y + glyph_rect.h;
-		(*vertices)[12*i+4]	= glyph_rect.x;
-		(*vertices)[12*i+5]	= glyph_rect.y + glyph_rect.h;
+		(*vertices)[12*i+1]		= glyph_rect.y;
+		(*vertices)[12*i+2]		= glyph_rect.x + glyph_rect.w;
+		(*vertices)[12*i+3]		= glyph_rect.y + glyph_rect.h;
+		(*vertices)[12*i+4]		= glyph_rect.x;
+		(*vertices)[12*i+5]		= glyph_rect.y + glyph_rect.h;
 
 		// Lower-right triangle.
-		(*vertices)[12*i+6]	= glyph_rect.x;
-		(*vertices)[12*i+7]	= glyph_rect.y;
-		(*vertices)[12*i+8]	= glyph_rect.x + glyph_rect.w;
-		(*vertices)[12*i+9]	= glyph_rect.y;
+		(*vertices)[12*i+6]		= glyph_rect.x;
+		(*vertices)[12*i+7]		= glyph_rect.y;
+		(*vertices)[12*i+8]		= glyph_rect.x + glyph_rect.w;
+		(*vertices)[12*i+9]		= glyph_rect.y;
 		(*vertices)[12*i+10]	= glyph_rect.x + glyph_rect.w;
 		(*vertices)[12*i+11]	= glyph_rect.y + glyph_rect.h;
 
@@ -313,17 +313,17 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 
 		// Upper-left triangle.
 		(*vertices)[12*i]		= glyph_rect.x;
-		(*vertices)[12*i+1]	= glyph_rect.y + glyph_rect.h;
-		(*vertices)[12*i+2]	= glyph_rect.x + glyph_rect.w;
-		(*vertices)[12*i+3]	= glyph_rect.y;
-		(*vertices)[12*i+4]	= glyph_rect.x + glyph_rect.w;
-		(*vertices)[12*i+5]	= glyph_rect.y + glyph_rect.h;
+		(*vertices)[12*i+1]		= glyph_rect.y + glyph_rect.h;
+		(*vertices)[12*i+2]		= glyph_rect.x + glyph_rect.w;
+		(*vertices)[12*i+3]		= glyph_rect.y;
+		(*vertices)[12*i+4]		= glyph_rect.x + glyph_rect.w;
+		(*vertices)[12*i+5]		= glyph_rect.y + glyph_rect.h;
 
 		// Lower-right triangle.
-		(*vertices)[12*i+6]	= glyph_rect.x;
-		(*vertices)[12*i+7]	= glyph_rect.y + glyph_rect.h;
-		(*vertices)[12*i+8]	= glyph_rect.x;
-		(*vertices)[12*i+9]	= glyph_rect.y;
+		(*vertices)[12*i+6]		= glyph_rect.x;
+		(*vertices)[12*i+7]		= glyph_rect.y + glyph_rect.h;
+		(*vertices)[12*i+8]		= glyph_rect.x;
+		(*vertices)[12*i+9]		= glyph_rect.y;
 		(*vertices)[12*i+10]	= glyph_rect.x + glyph_rect.w;
 		(*vertices)[12*i+11]	= glyph_rect.y;
 

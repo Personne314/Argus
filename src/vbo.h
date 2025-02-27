@@ -4,7 +4,7 @@
 
 
 /// @struct VBO
-/// @brief Used to create and use a VBO.
+/// @brief Used to manage an OpenGL VBO.
 struct VBO {
 	GLuint vbo_id;	///< OpenGL VBO id.
 	int size;		///< Number of vectors in the VBO.
