@@ -1,7 +1,11 @@
 #pragma once
 
+#include <stddef.h>
+#include <stdint.h>
+
+
 // Iterates over an UTF8 string.
-int utf8_iterate(const char **text);
+uint32_t utf8_iterate(const char **text);
 
 // Returns the len of an UTF8 string.
-int utf8_len(const char *text);
+size_t utf8_len(const char *text);
