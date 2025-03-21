@@ -1,44 +1,43 @@
 #pragma once
 
 #include <stdbool.h>
-
+#include <stddef.h>
 
 
 /// @struct Vector
-/// @brief A float dynamic array.
-struct Vector {
+/// @brief A dynamic array of float.
+typedef struct {
 	float *data;	///< The content of the vector.
-	int size;	///< The size of the vector.
-	int cap;	///< The maximum capacity of the vector.
-};
-typedef struct Vector Vector;
+	size_t size;	///< The size of the vector.
+	size_t cap;		///< The maximum capacity of the vector.
+} Vector;
 
 
-// Creates a vector of initial capacity cap.
-Vector *vector_create(int cap);
+/// Creates a vector with the specified initial capacity.
+Vector *vector_create(size_t cap);
 
-// Frees a vector.
-void vector_free(Vector *vector);
+/// Frees the memory allocated for a vector and its data buffer.
+void vector_free(Vector **p_vector);
 
 // Adds an element at the end of the vector.
-void vector_push_back(Vector *vector, float val);
+bool vector_push_back(Vector *vector, float val);
 
-// Set the value of an element in a vector.
-void vector_set(Vector *vector, int id, float val);
+// Sets the value of an element in the vector.
+bool vector_set(Vector *vector, size_t id, float val);
 
-// Gets a value from a vector.
-float vector_at(Vector *vector, int id);
+// Retrieves a value from a vector at a given index.
+float vector_at(Vector *vector, size_t id);
 
-// Gets the last element of a vector.
+// Retrieves the last element of a vector.
 float vector_back(Vector *vector);
 
 // Returns the vector size.
-int vector_size(Vector *vector);
+size_t vector_size(Vector *vector);
 
 // Returns the vector capacity.
-int vector_cap(Vector *vector);
+size_t vector_cap(Vector *vector);
 
-// Check if the vector is empty.
+// Checks if the vector is empty.
 bool vector_empty(Vector *vector);
 
 // Prints the vector into stdout.
@@ -48,4 +47,4 @@ void vector_print(Vector *vector);
 void vector_clear(Vector *vector);
 
 // Deletes an element from a vector.
-void vector_erase(Vector *vector, int id);
+void vector_erase(Vector *vector, size_t id);

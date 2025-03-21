@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "vector.h"
 #include "curve.h"
 #include "vao.h"
 #include "axis.h"
@@ -21,7 +20,7 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	Rect grid_rect = *p_grid_rect;
 
 	// Frees the previous VAO.
-	if (graph->grid_vao) vao_free(graph->grid_vao);
+	vao_free(&graph->grid_vao);
 	graph->grid_vao = NULL;
 	if (graph->x_axis.min >= graph->x_axis.max || graph->y_axis.min >= graph->y_axis.max) {
 		fprintf(stderr, "[ARGUS]: error: The axis min and max value are invalid !\n");

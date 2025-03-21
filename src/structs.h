@@ -4,13 +4,12 @@
 
 /// @struct Rect
 /// @brief Struct used to represent a rectangle aligned with the axis.
-struct Rect {
+typedef struct {
 	float x;	///< x coordinate.
 	float y;	///< y coordinate.
 	float w;	///< Width of the rectangle.
 	float h;	///< Height of the rectangle.
-};
-typedef struct Rect Rect;
+} Rect;
 
 // Default rectangle value.
 #define RECT_INIT (Rect){0.0f,0.0f,0.0f,0.0f}
@@ -18,12 +17,11 @@ typedef struct Rect Rect;
 
 /// @struct Color
 /// @brief Struct used to manipulate an rgb formated color. 
-struct Color {
+typedef struct {
 	float r;	///< Red component.
 	float g;	///< Green component.
 	float b;	///< Blue component.
-};
-typedef struct Color Color;
+} Color;
 
 // Set of default colors.
 #define COLOR_WHITE (Color){1.0f, 1.0f, 1.0f}

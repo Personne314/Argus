@@ -343,9 +343,8 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 VAO *glyphs_generate_text_vao(float *vertices, float *textures, int nb_char) {
 	void *data[2] = {vertices, textures};
 	int sizes[2] = {2,2};
-	int array_ids[2] = {0,1};
 	int gl_types[2] = {GL_FLOAT, GL_FLOAT};
-	VAO *vao = vao_create(data, sizes, array_ids, gl_types, 6*nb_char, 2);
+	VAO *vao = vao_create(data, sizes, gl_types, 6*nb_char, 2);
 	if (!vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to create a VAO for a text buffer !\n");	
 		return NULL;

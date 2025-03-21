@@ -41,12 +41,9 @@ Graph *graph_create(Rect rect) {
 /// @brief Frees a graph.
 /// @param graph The graph to free.
 void graph_free(Graph *graph) {
-	if (graph->background_vao) vao_free(graph->background_vao);
-	if (graph->title_vao) vao_free(graph->title_vao);
-	if (graph->grid_vao) vao_free(graph->grid_vao);
-	graph->background_vao = NULL;
-	graph->title_vao = NULL;
-	graph->grid_vao = NULL;
+	vao_free(&graph->background_vao);
+	vao_free(&graph->title_vao);
+	vao_free(&graph->grid_vao);
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
 	free(graph);
@@ -156,9 +153,8 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	// Creates the VAO for the background part.
 	void *data[2] = {vertices, colors};
 	int sizes[2] = {2,4};
-	int array_ids[2] = {0,1};
 	int gl_types[2] = {GL_FLOAT,GL_FLOAT};
-	graph->background_vao = vao_create(data, sizes, array_ids, gl_types, 12,2);
+	graph->background_vao = vao_create(data, sizes, gl_types, 12,2);
 	if (!graph->background_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph !\n");
 		return true;
@@ -187,12 +183,9 @@ bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int w
 void graph_reset_graphics(Graph *graph) {
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
-	if (graph->grid_vao) vao_free(graph->grid_vao);
-	if (graph->background_vao) vao_free(graph->background_vao);
-	if (graph->title_vao) vao_free(graph->title_vao);
-	graph->background_vao = NULL;
-	graph->title_vao = NULL;
-	graph->grid_vao = NULL;
+	vao_free(&graph->grid_vao);
+	vao_free(&graph->background_vao);
+	vao_free(&graph->title_vao);
 }
 
 /// @brief Renders the graph.

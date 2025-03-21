@@ -25,9 +25,8 @@ VAO *curve_prepare_vao(float *x_val, float *y_val, int n) {
 	// Creates the VAO.
 	void *data = vertices;
 	int size = 2;
-	int array_id = 0;
 	int gl_type = GL_FLOAT;
-	VAO *vao = vao_create(&data, &size, &array_id, &gl_type, n,1);
+	VAO *vao = vao_create(&data, &size, &gl_type, n,1);
 	free(vertices);
 	if (!vao) fprintf(stderr, "[ARGUS]: error: unable to create a VAO for a curve !\n");
 	return vao;

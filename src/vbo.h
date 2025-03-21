@@ -1,22 +1,22 @@
 #pragma once
 
+#include <stddef.h>
 #include <GL/glew.h>
 
 
 /// @struct VBO
 /// @brief Used to manage an OpenGL VBO.
-struct VBO {
+typedef struct {
+	size_t size;	///< Number of vectors in the VBO.
 	GLuint vbo_id;	///< OpenGL VBO id.
-	int size;		///< Number of vectors in the VBO.
-};
-typedef struct VBO VBO;
+} VBO;
 
 
 // Constructs a VBO using the given parameters.
-VBO *vbo_create(void** data, int* sizes, int* type_sizes, int buffer_len, int n);
+VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, size_t n);
 
-// Frees a VBO.
-void vbo_free(VBO *vbo);
+// Frees the memory allocated for a VBO.
+void vbo_free(VBO **p_vbo);
 
 // Binds a VBO.
 void vbo_bind(VBO *vbo);

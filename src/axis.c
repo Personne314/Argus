@@ -13,8 +13,7 @@
 /// @param window_height The window height.
 /// @return true is there was an error.
 bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_width, int window_height) {
-	if (axis->axis_vao) vao_free(axis->axis_vao);
-	axis->axis_vao = NULL;
+	vao_free(&axis->axis_vao);
 
 	// Constants used for the vertices generation.
 	const float dx = 5.0f/window_width;
@@ -55,8 +54,7 @@ bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 /// @param window_height The window height.
 /// @return true is there was an error.
 bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_width, int window_height) {
-	if (axis->axis_vao) vao_free(axis->axis_vao);
-	axis->axis_vao = NULL;
+	vao_free(&axis->axis_vao);
 
 	// Constants used for the vertices generation.
 	const float dy = 5.0f/window_height;
@@ -103,8 +101,7 @@ bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 /// @return true if there was an error.
 bool axis_prepare_x_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float range, float offset, 
 float base, float d, int n, int window_width, int window_height) {
-	if (axis->axis_vao) vao_free(axis->axis_vao);
-	axis->axis_vao = NULL;
+	vao_free(&axis->axis_vao);
 
 	// Constants used for the vertices generation.
 	const float window_ratio = (float)window_width/window_height;
@@ -189,9 +186,8 @@ float base, float d, int n, int window_width, int window_height) {
 /// @return true if there was an error.
 bool axis_prepare_y_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float range, float offset, 
 float base, float d, int n, int window_width, int window_height) {
-	if (axis->axis_vao) vao_free(axis->axis_vao);
-	axis->axis_vao = NULL;
-
+	vao_free(&axis->axis_vao);
+	
 	// Constants used for the vertices generation.
 	const float window_ratio = (float)window_width/window_height;
 	const float dx = 5.0f/window_width;
@@ -266,8 +262,6 @@ float base, float d, int n, int window_width, int window_height) {
 /// @brief Reset the graphical components of an axis after the rendering process.
 /// @param axis The axis to reset.
 void axis_reset_graphics(Axis *axis) {
-	if (axis->title_vao) vao_free(axis->title_vao);
-	if (axis->axis_vao) vao_free(axis->axis_vao);
-	axis->title_vao = NULL;
-	axis->axis_vao = NULL;
+	vao_free(&axis->title_vao);
+	vao_free(&axis->axis_vao);
 }
