@@ -1,13 +1,13 @@
 #pragma once
 
-#include "vector.h"
+#include "ring_buffer.h"
 #include "vao.h"
 
 
 
 struct Curve {
-	Vector *x_val;
-	Vector *y_val;
+	RingBuffer *x_val;
+	RingBuffer *y_val;
 	float x_min;
 	float x_max;
 	float y_min;
@@ -15,6 +15,10 @@ struct Curve {
 };
 typedef struct Curve Curve;
 
+
+
+Curve *curve_create();
+void curve_free(Curve **curve);
 
 
 // Creates a VAO for a curve.

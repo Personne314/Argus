@@ -41,9 +41,9 @@ Graph *graph_create(Rect rect) {
 	graph->y_axis.max = 1.9;
 
 	// Creates the curves vector.
-	graph->curves = vector_create(1);
+	graph->curves = curves_create();
 	if (!graph->curves) {
-		fprintf(stderr, "[ARGUS]: error: unable to creates the curves Vector of a Graph\n");
+		fprintf(stderr, "[ARGUS]: error: unable to creates the curves of a Graph\n");
 		free(graph);
 		return NULL;
 	}
@@ -56,7 +56,7 @@ Graph *graph_create(Rect rect) {
 void graph_free(Graph **p_graph) {
 	Graph *graph = *p_graph;
 	if (!graph) return;
-	vector_free(&graph->curves);
+	curves_free(&graph->curves);
 	vao_free(&graph->background_vao);
 	vao_free(&graph->title_vao);
 	vao_free(&graph->grid_vao);

@@ -12,6 +12,7 @@
 #include "graph.h"
 #include "shader.h"
 #include "glyphs.h"
+#include "curves.h"
 
 
 #define OFFSET_SIZE 10
@@ -394,23 +395,43 @@ void argus_graph_set_text_color(Color c) {
 }
 
 /// @brief Adds a new curve to the current graph.
+/// @note This should be called at least once on a graph before trying to draw anything.
 void argus_graph_add_curve() {
 	CHECK_INIT(init, argus_mutex)
-	vector_push_back(CURRENT_GRAPH->curves, NULL);
+	curves_push_back_curve(CURRENT_GRAPH->curves);
 	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Removes the current curve from the current graph.
+/// @note After the call, the current curve is set to the preceding curve, or
+/// the next one if the deleted curve was the first one, or -1 if the deleted
+/// curve was the last one.
 void argus_graph_remove_curve() {
 	CHECK_INIT(init, argus_mutex)
-	
+	if (current_curve >= 0) {
+		curves_delete_curve(CURRENT_GRAPH->curves, current_curve);
+		if (curves_size(CURRENT_GRAPH->curves)) {
+			current_curve = current_curve ? current_curve - 1 : 0;
+		} else current_curve = -1;
+	}
 	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the curve currently being manipulated.
-void argus_graph_set_current_curve(int id) {
+/// @param id The id of the curve to manipulate.
+/// @note id must be a valid index between 0 and the number of curves in the graph-1.
+void argus_graph_set_current_curve(size_t id) {
 	CHECK_INIT(init, argus_mutex)
-	
+	if (id >= curves_size(CURRENT_GRAPH->curves)) {
+		fprintf(stderr, "[ARGUS]: error: %d isn't an existing curve id ! The current curve won't be changed.\n", id);	
+	} else current_curve = id;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Returns the number of curves in the current graph.
+size_t argus_graph_get_current_curve_number() {
+	CHECK_INIT(init, argus_mutex)
+	return curves_size(CURRENT_GRAPH->curves);
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -419,12 +440,17 @@ void argus_graph_set_current_curve(int id) {
 
 
 ////////////////////////////////////////////////////////////////
-//                      Data functions                        //
+//                      Curve functions                       //
 ////////////////////////////////////////////////////////////////
 
 /// @brief Sets the data size of the current curve in the current graph.
 void argus_graph_curve_set_size(size_t size) {
 	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The size won't change.\n");	
+		return;
+	}
+	
 	
 	pthread_mutex_unlock(&argus_mutex);
 }
@@ -432,14 +458,24 @@ void argus_graph_curve_set_size(size_t size) {
 /// @brief Sets the x values of the current curve in the current graph.
 void argus_graph_data_set_x(float *data) {
 	CHECK_INIT(init, argus_mutex)
-	
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The x data won't change.\n");	
+		return;
+	}
+
+
 	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the y values of the current curve in the current graph.
 void argus_graph_data_set_y(float *data) {
 	CHECK_INIT(init, argus_mutex)
-	
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The y data won't change.\n");	
+		return;
+	}
+
+
 	pthread_mutex_unlock(&argus_mutex);
 }
 

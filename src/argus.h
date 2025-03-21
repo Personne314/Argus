@@ -17,7 +17,7 @@ void argus_quit();
 
 
 ////////////////////////////////////////////////////////////////
-//                         Setters                            //
+//                     Global Setters                         //
 ////////////////////////////////////////////////////////////////
 
 // Resizes the Argus window.
@@ -68,7 +68,10 @@ void argus_graph_add_curve();
 void argus_graph_remove_curve();
 
 // Sets the curve currently being manipulated.
-void argus_graph_set_current_curve(int id);
+void argus_graph_set_current_curve(size_t id);
+
+// Returns the number of curves in the current graph.
+size_t argus_graph_get_current_curve_number();
 
 
 ////////////////////////////////////////////////////////////////

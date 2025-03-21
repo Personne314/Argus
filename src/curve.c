@@ -4,6 +4,22 @@
 #include <stdlib.h>
 
 
+
+
+
+
+Curve *curve_create() {
+	return NULL;
+}
+
+void curve_free(Curve **p_curve) {
+
+}
+
+
+
+
+
 /// @brief Creates a VAO for a curve.
 /// @param x_val x coordinates of the points.
 /// @param y_val y coordinates of the points.
