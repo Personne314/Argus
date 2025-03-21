@@ -15,7 +15,7 @@
 /// @param x_axis x axis of the grid.
 /// @param y_axis y axis of the grid.
 /// @param p_grid_rect Pointer to the grid rect.
-/// @return true if there was an error.
+/// @return false if there was an error.
 bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height) {
 	Rect grid_rect = *p_grid_rect;
 
@@ -24,7 +24,7 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	graph->grid_vao = NULL;
 	if (graph->x_axis.min >= graph->x_axis.max || graph->y_axis.min >= graph->y_axis.max) {
 		fprintf(stderr, "[ARGUS]: error: The axis min and max value are invalid !\n");
-		return true;
+		return false;
 	}
 
 	// Calculates the number of values to display.
@@ -48,9 +48,9 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	float *y_coord = malloc((8+2*(n_x+n_y)) * sizeof(float));
 	if (!x_coord || !y_coord) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc buffers to store the grid coordinates !\n");
-		if (x_coord) free(x_coord);
-		if (y_coord) free(y_coord);
-		return true;
+		free(x_coord);
+		free(y_coord);
+		return false;
 	}
 
 	// x coordinates of the grid box.
@@ -95,19 +95,19 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	free(y_coord);
 	if (!graph->grid_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to create a graph grid VAO !\n");
-		return true;
+		return false;
 	}
 
 	// Creates the axis VAOs.
-	if (axis_prepare_x_axis(&graph->x_axis, glyphs, &graph->grid_rect, x_range,
+	if (!axis_prepare_x_axis(&graph->x_axis, glyphs, &graph->grid_rect, x_range,
 		grid_rect.x + grid_rect.w*x_offset, min_x_grad, dx, n_x, window_width, window_height)) {
 			fprintf(stderr, "[ARGUS]: error: unable to prepare a graph x axis !\n");
-			return true;
+			return false;
 	}
-	if (axis_prepare_y_axis(&graph->y_axis, glyphs, &graph->grid_rect, y_range, 
+	if (!axis_prepare_y_axis(&graph->y_axis, glyphs, &graph->grid_rect, y_range, 
 		grid_rect.h*y_offset, min_y_grad, dy, n_y, window_width, window_height)) {
 			fprintf(stderr, "[ARGUS]: error: unable to prepare a graph y axis !\n");
-			return true;
+			return false;
 	}
-	return false;
+	return true;
 }

@@ -10,18 +10,17 @@
 
 /// @struct Glyphs
 /// @brief Used to load and use a font as an atlas of textures.
-struct Glyphs {
+typedef struct {
 	GLuint texture_id;	///< OpenGL texture id.
 	float ratio;		///< The glyph ratio of the loaded font (w/h).
-};
-typedef struct Glyphs Glyphs;
+} Glyphs;
 
 
 // Creates a glyphs set from a ttf file.
 Glyphs *glyphs_create(int size);
 
-// Frees a glyphs structure.
-void glyphs_free(Glyphs *glyphs);
+// FrFrees the memory allocated for a Glyphs.
+void glyphs_free(Glyphs **p_glyphs);
 
 // Binds the texture of the glyphs.
 void glyphs_bind(Glyphs *glyphs);

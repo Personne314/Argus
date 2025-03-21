@@ -11,7 +11,7 @@
 /// @param p_rect The rect of the axis.
 /// @param window_width The window width.
 /// @param window_height The window height.
-/// @return true is there was an error.
+/// @return false is there was an error.
 bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_width, int window_height) {
 	vao_free(&axis->axis_vao);
 
@@ -25,10 +25,10 @@ bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 	float *textures = NULL;
 	if (axis->title && strlen(axis->title)) {
 		Rect text_rect = {rect.x+dx, rect.y, rect.w/2-2*dx, rect.h};
-		if (glyphs_generate_vertical_text_buffers(glyphs, &text_rect, axis->title, 
+		if (!glyphs_generate_vertical_text_buffers(glyphs, &text_rect, axis->title, 
 			(float)window_width/window_height, &vertices, &textures, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to generate the buffers of data for the x axis title of a graph !\n");
-			return true;
+			return false;
 		}
 	}
 
@@ -39,11 +39,10 @@ bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 		free(textures);
 		if (!axis->title_vao) {
 			fprintf(stderr, "[ARGUS]: error: unable to creates the VAO for the x axis title of a graph !\n");
-			return true;
+			return false;
 		}
 	} else axis->title_vao = NULL;
-	return false;
-
+	return true;
 }
 
 /// @brief Prepares the y axis title.
@@ -52,7 +51,7 @@ bool axis_prepare_x_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 /// @param p_rect The rect of the axis.
 /// @param window_width The window width.
 /// @param window_height The window height.
-/// @return true is there was an error.
+/// @return false is there was an error.
 bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_width, int window_height) {
 	vao_free(&axis->axis_vao);
 
@@ -66,10 +65,10 @@ bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 	float *textures = NULL;
 	if (axis->title && strlen(axis->title)) {
 		Rect text_rect = {rect.x, rect.y+(rect.h-dy)/2+dy, rect.w, (rect.h+dy)/2-2*dy};
-		if (glyphs_generate_text_buffers(glyphs, &text_rect, axis->title, 
+		if (!glyphs_generate_text_buffers(glyphs, &text_rect, axis->title, 
 			(float)window_width/window_height, &vertices, &textures, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to generate the buffers of data for the y axis title of a graph !\n");
-			return true;
+			return false;
 		}
 	}
 
@@ -80,11 +79,10 @@ bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 		free(textures);
 		if (!axis->title_vao) {
 			fprintf(stderr, "[ARGUS]: error: unable to creates the VAO for the y axis title of a graph !\n");
-			return true;
+			return false;
 		}
 	} else axis->title_vao = NULL;
-	return false;
-
+	return true;
 }
 
 /// @brief Prepares the x axis graduation depending of the min and max values.
@@ -98,7 +96,7 @@ bool axis_prepare_y_title(Axis *axis, Glyphs *glyphs, Rect *p_rect, int window_w
 /// @param n The number of values to render.
 /// @param window_width The window width.
 /// @param window_height The window height.
-/// @return true if there was an error.
+/// @return false if there was an error.
 bool axis_prepare_x_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float range, float offset, 
 float base, float d, int n, int window_width, int window_height) {
 	vao_free(&axis->axis_vao);
@@ -113,7 +111,7 @@ float base, float d, int n, int window_width, int window_height) {
 	float *textures = malloc(192*n*sizeof(float));
 	if (!vertices || !textures) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc buffers for the data of the x axis of a graph !\n");
-		return true;
+		return false;
 	}
 	
 	// Generates the vertices of each numbers and adds it to vertices and textures.
@@ -132,13 +130,13 @@ float base, float d, int n, int window_width, int window_height) {
 		// Gets the vertices buffers of the number to render.
 		int n = 0;
 		float *v = NULL, *t = NULL;		
-		if (glyphs_generate_text_buffers(glyphs, &rect, text_buffer, window_ratio, &v, &t, &n)) {
+		if (!glyphs_generate_text_buffers(glyphs, &rect, text_buffer, window_ratio, &v, &t, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to generate the buffers of data for the x axis of a graph !\n");
-			if (v) free(v);
-			if (t) free(t);
+			free(v);
+			free(t);
 			free(vertices);
 			free(textures);
-			return true;
+			return false;
 		}
 
 		// Calculates offsets when needed.
@@ -167,9 +165,9 @@ float base, float d, int n, int window_width, int window_height) {
 	free(textures);
 	if (!axis->axis_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to generate the VAO for the x axis of a graph !\n");
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 /// @brief Prepares the y axis graduation depending of the min and max values.
@@ -183,7 +181,7 @@ float base, float d, int n, int window_width, int window_height) {
 /// @param n The number of values to render.
 /// @param window_width The window width.
 /// @param window_height The window height.
-/// @return true if there was an error.
+/// @return false if there was an error.
 bool axis_prepare_y_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float range, float offset, 
 float base, float d, int n, int window_width, int window_height) {
 	vao_free(&axis->axis_vao);
@@ -198,7 +196,7 @@ float base, float d, int n, int window_width, int window_height) {
 	float *textures = malloc(192*n*sizeof(float));
 	if (!vertices || !textures) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc buffers for the data of the y axis of a graph !\n");
-		return true;
+		return false;
 	}
 
 	// Generates the vertices of each numbers and adds it to vertices and textures.
@@ -219,13 +217,13 @@ float base, float d, int n, int window_width, int window_height) {
 		// Gets the vertices buffers of the number to render.
 		int n = 0;
 		float *v = NULL, *t = NULL;
-		if (glyphs_generate_vertical_text_buffers(glyphs, &rect, text_buffer, window_ratio, &v, &t, &n)) {
+		if (!glyphs_generate_vertical_text_buffers(glyphs, &rect, text_buffer, window_ratio, &v, &t, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to generate the buffers of data for the y axis of a graph !\n");
-			if (v) free(v);
-			if (t) free(t);
+			free(v);
+			free(t);
 			free(vertices);
 			free(textures);
-			return true;
+			return false;
 		}
 
 		// Calculates offsets when needed.
@@ -254,9 +252,9 @@ float base, float d, int n, int window_width, int window_height) {
 	free(textures);
 	if (!axis->axis_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to generate the VAO for the x axis of a graph !\n");
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 /// @brief Reset the graphical components of an axis after the rendering process.

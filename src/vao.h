@@ -15,7 +15,7 @@ typedef struct {
 
 
 // Constructs a VAO using the given parameters.
-VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, size_t n);
+VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, int n);
 
 // Frees the memory allocated for a VAO.
 void vao_free(VAO **p_vao);

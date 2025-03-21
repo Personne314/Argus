@@ -12,7 +12,7 @@
 
 /// @struct Graph
 /// @brief Constains all the components to render a graph.
-struct Graph {
+typedef struct {
 	Axis x_axis;	// X Axis.
 	Axis y_axis;	// Y Axis.
 	Rect rect;		// The rect of the graph.
@@ -25,15 +25,14 @@ struct Graph {
 	VAO *background_vao;	// VAO for the background of the graph.
 	VAO *title_vao;		// VAO for the graph title.
 	const char *title;	// The graph title.
-};
-typedef struct Graph Graph;
+} Graph;
 
 
 // Creates a graph.
 Graph *graph_create(Rect rect);
 
-// Frees a graph.
-void graph_free(Graph *graph);
+// Frees the memory allocated for a Graph.
+void graph_free(Graph **p_graph);
 
 // Prepares the static graphical components of a graph.
 bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int window_height);

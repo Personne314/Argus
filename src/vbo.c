@@ -13,7 +13,7 @@
 /// @param n Number of lists in data.
 /// @note n is the length of data, sizes, type_sizes and n*sizes[i] is the len of data[i]. 
 /// @return The created VBO.
-VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, size_t n) {
+VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, int n) {
 
 	// Malloc the VBO structure.
 	VBO *vbo = malloc(sizeof(VBO));
@@ -27,7 +27,7 @@ VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, siz
 	// Calculate the size used by each list and the total size.
 	GLsizeiptr data_sizes[n+1];
 	data_sizes[n] = 0;
-	for (size_t i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) {
 		GLsizeiptr val = sizes[i] * type_sizes[i] * buffer_len;
 		data_sizes[n] += val;
 		data_sizes[i] = val;
@@ -37,7 +37,7 @@ VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, siz
 	vbo_bind(vbo);
 		size_t offset = 0;
 		glBufferData(GL_ARRAY_BUFFER, data_sizes[n], 0, GL_STATIC_DRAW);
-		for(size_t i = 0; i < n; i++) {
+		for(int i = 0; i < n; i++) {
 			glBufferSubData(GL_ARRAY_BUFFER, offset, data_sizes[i], data[i]);
 			offset += data_sizes[i];
 		}
@@ -46,10 +46,9 @@ VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, siz
 }
 
 /// @brief Frees the memory allocated for a VBO.
-/// @param vbo A pointer to the pointer of the VBO to be freed.
+/// @param p_vbo A pointer to the pointer of the VBO to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_vbo is set to NULL to avoid double-free.
 void vbo_free(VBO **p_vbo) {
-	if (!p_vbo) return;
 	VBO *vbo = *p_vbo;
 	if (!vbo) return;
 	if(glIsBuffer(vbo->vbo_id) == GL_TRUE) glDeleteBuffers(1, &vbo->vbo_id);

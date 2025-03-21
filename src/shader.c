@@ -118,19 +118,24 @@ static const ShaderInfo shader_infos[] = {
 	}
 };
 
+
+// List of used shaders.
+Shader *shaders[SHADERNAME_SIZE];
+
+
 /// @brief Returns the sources of a shader.
 /// @param shader The constants that name the shader from which to get the sources.
 /// @param name A variable to store a const pointer ot the shader name.
 /// @param vert A variable to store a const pointer ot the vertex shader source.
 /// @param frag A variable to store a const pointer ot the fragment shader source.
-/// @return true if the name don't describe a known shader.
+/// @return false if the name don't describe a known shader.
 bool shader_get_sources(const ShaderName shader, const char **name, const char **vert,
 const char **frag, const int **attr_ids, const char ***attr_names, int *n) {
-    if (shader < 0 || shader >= SHADER_LIST_SIZE) {
+    if (shader < 0 || shader >= SHADERNAME_SIZE) {
 		fprintf(stderr, 
 			"[ARGUS]: error: '%d' doesn't correspond to a valid ShaderName value ! "
 			"Unable to get the shader sources.\n", shader);
-        return true;
+        return false;
     }
     *name = shader_infos[shader].name;
     *vert = shader_infos[shader].vert;
@@ -138,27 +143,22 @@ const char **frag, const int **attr_ids, const char ***attr_names, int *n) {
 	*attr_ids = shader_infos[shader].attr_ids;
 	*attr_names = shader_infos[shader].attr_names;
 	*n = shader_infos[shader].n;
-    return false;
+    return true;
 }
-
-// List of used shaders.
-Shader *shaders[SHADER_LIST_SIZE];
 
 /// @brief Compiles a source code into a shader.
 /// @param shader The variable where to store the shader id.
 /// @param type The type of the shader to compile.
 /// @param source The shader source code.
-/// @return true if there was an error.
+/// @return false if there was an error.
 static bool compile_shader(GLuint *shader, GLenum type, const char *source, const char *name) {
 
 	// Creates the shader.
 	GLuint i = glCreateShader(type);
 	*shader = i;
 	if (*shader == 0) {
-		fprintf(stderr, 
-			"[ARGUS]: error: shader '%s' creation failed, the type '%d' doesn't exists !\n", 
-			name, type
-		);
+		fprintf(stderr, "[ARGUS]: error: shader '%s' creation failed, "
+						"the type '%d' doesn't exists !\n", name, type);
 		goto SHADER_CREATION_ERROR;
 	}
 
@@ -182,19 +182,19 @@ static bool compile_shader(GLuint *shader, GLenum type, const char *source, cons
 		char_error[error_size] = '\0';
 
 		// Prints the error message.
-		fprintf(stderr, "[ARGUS]: error: %s", char_error);
+		fprintf(stderr, "[ARGUS]: error: %s\n", char_error);
 		free(char_error);
 		goto SHADER_COMPILATION_FAILURE;
 
 	}
-	return false;
+	return true;
 
 	// Error cases.
 SHADER_COMPILATION_FAILURE:
 	glDeleteShader(*shader);
 SHADER_CREATION_ERROR:
 	*shader = 0;
-	return true;
+	return false;
 }
 
 /// @brief Creates a shader from source codes.
@@ -216,13 +216,13 @@ const int *attr_ids, const char *attr_names[], const int n) {
 	}
 
 	// Vertex shader compilation.
-	if (compile_shader(&shader->vert_id, GL_VERTEX_SHADER, vert, name)) {
+	if (!compile_shader(&shader->vert_id, GL_VERTEX_SHADER, vert, name)) {
 		fprintf(stderr, "[ARGUS]: error: failed to compile the vertex shader of shader '%s' !\n", name);
 		goto SHADER_VERTEX_COMPILATION_FAILURE;
 	}
 
 	// Fragment shader compilation.
-	if (compile_shader(&shader->frag_id, GL_FRAGMENT_SHADER, frag, name)) {
+	if (!compile_shader(&shader->frag_id, GL_FRAGMENT_SHADER, frag, name)) {
 		fprintf(stderr, "[ARGUS]: error: failed to compile the fragment shader of shader '%s' !\n", name);
 		goto SHADER_FRAGMENT_COMPILATION_FAILURE;
 	}
@@ -258,7 +258,7 @@ const int *attr_ids, const char *attr_names[], const int n) {
 		char_error[error_size] = '\0';
 
 		// Prints the error message.
-		fprintf(stderr, "[ARGUS]: error: %s", char_error);
+		fprintf(stderr, "[ARGUS]: error: %s\n", char_error);
 		free(char_error);
 		goto SHADER_LINK_ERROR;
 	}
@@ -277,13 +277,17 @@ SHADER_MALLOC_FAILURE:
 	return NULL;
 }
 
-/// @brief Frees a shader.
-/// @param shader The shader to free.
-void shader_free(Shader *shader) {
+/// @brief Frees the memory allocated for a Shader.
+/// @param vao A pointer to the pointer of the Shader to be freed. Cannot be NULL.
+/// @note After freeing, the pointer *p_shader is set to NULL to avoid double-free.
+void shader_free(Shader **p_shader) {
+	Shader *shader = *p_shader;
+	if (!shader) return;
 	glDeleteShader(shader->vert_id);
 	glDeleteShader(shader->frag_id);
 	glDeleteProgram(shader->prog_id);
 	free(shader);
+	*p_shader = NULL;
 }
 
 /// @brief Binds a shader.
@@ -297,7 +301,7 @@ void shader_use(Shader *shader) {
 /// @brief Do a call to glGetUniformLocation.
 /// @param shader The shader from where to get the uniform location.
 /// @param str The uniform name from who to get the uniform location
-/// @return The location of the uniform variable.
+/// @return The location of the uniform variable, -1 if the resource wasn't found.
 int shader_uniform_location(Shader *shader, const char *str) {
 	int uniform_location = glGetUniformLocation(shader->prog_id, str);
 	if (uniform_location == -1) {

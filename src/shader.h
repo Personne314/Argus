@@ -6,25 +6,23 @@
 
 /// @enum ShaderName
 /// @brief List of constants that represents each shader.
-enum ShaderName {
+typedef enum {
 	SHADER_SHAPE,
 	SHADER_TEXT,
 	SHADER_CURVE,
-	SHADER_LIST_SIZE
-};
-typedef enum ShaderName ShaderName;
+	SHADERNAME_SIZE
+} ShaderName;
 
 /// @struct Shader
 /// @brief Used to store an OpenGL shader.
-struct Shader {
+typedef struct {
 	GLuint vert_id;	///< Vertex shader id.
 	GLuint frag_id;	///< Fragment shader id.
 	GLuint prog_id;	///< Shader program id.
-};
-typedef struct Shader Shader;
+} Shader;
 
 // List of used shaders.
-extern Shader *shaders[SHADER_LIST_SIZE];
+extern Shader *shaders[SHADERNAME_SIZE];
 
 // Returns the sources of a shader.
 bool shader_get_sources(const ShaderName shader, const char **name, const char **vert, 
@@ -34,11 +32,11 @@ bool shader_get_sources(const ShaderName shader, const char **name, const char *
 Shader *shader_create(const char *vert, const char *frag, const char *name, 
 	const int *attr_ids, const char *attr_names[], const int n);
 
-// Creates a shader from source codes.
-void shader_free(Shader *shader);
-
-// Frees a shader.
-void shader_use(Shader *shader);
+// Frees the memory allocated for a Shader.
+void shader_free(Shader **p_shader);
 
 // Binds a shader.
+void shader_use(Shader *shader);
+
+// Do a call to glGetUniformLocation.
 int shader_uniform_location(Shader *shader, const char *str);

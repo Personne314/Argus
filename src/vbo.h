@@ -13,7 +13,7 @@ typedef struct {
 
 
 // Constructs a VBO using the given parameters.
-VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, size_t n);
+VBO *vbo_create(void** data, int* sizes, int* type_sizes, size_t buffer_len, int n);
 
 // Frees the memory allocated for a VBO.
 void vbo_free(VBO **p_vbo);

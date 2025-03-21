@@ -125,7 +125,7 @@ void argus_init() {
 	grid = NULL;
 	update_func = NULL;
 	update_args = NULL;
-	for (int i = 0; i < SHADER_LIST_SIZE; ++i) shaders[i] = NULL;
+	for (int i = 0; i < SHADERNAME_SIZE; ++i) shaders[i] = NULL;
 	dt = 1.0;
 	width = 640;
 	height = 480;
@@ -170,14 +170,10 @@ void argus_quit() {
 	
 	// Frees the argus variables.
 	if (grid) {
-		for (int i = 0; i < lines*columns; ++i)
-			if (grid[i]) graph_free(grid[i]);
+		for (int i = 0; i < lines*columns; ++i) graph_free(grid+i);
 		free(grid);
 	}
-	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
-		if (shaders[i]) shader_free(shaders[i]);
-		shaders[i] = NULL;
-	}
+	for (int i = 0; i < SHADERNAME_SIZE; ++i) shader_free(shaders+i);
 	if (context) SDL_GL_DeleteContext(context);
 	if (window) SDL_DestroyWindow(window);
 
@@ -241,10 +237,9 @@ void argus_set_grid_size(int w, int h) {
 		h = 1;
 	}
 
-	// Clears the old
+	// Clears the old grid.
 	if (grid) {
-		for (int i = 0; i < lines*columns; ++i)
-			if (grid[i]) graph_free(grid[i]);
+		for (int i = 0; i < lines*columns; ++i) graph_free(grid+i);
 		free(grid);
 	}
 
@@ -449,7 +444,7 @@ void argus_show() {
 	const int *attr_ids;
 	const char **attr_names;
 	int n;
-	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
+	for (int i = 0; i < SHADERNAME_SIZE; ++i) {
 		shader_get_sources((ShaderName)i, &name, &vert_source, &frag_source, &attr_ids, &attr_names, &n);
 		shaders[i] = shader_create(vert_source, frag_source, name, attr_ids, attr_names, n);
 		if (!shaders[i]) {
@@ -468,8 +463,8 @@ void argus_show() {
 	// Renders the window.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (int i = 0; i < lines*columns; ++i) {
-		if (graph_prepare_static(grid[i], glyphs, width, height) || 
-			graph_prepare_dynamic(grid[i], glyphs, width, height)) {
+		if (!graph_prepare_static(grid[i], glyphs, width, height) || 
+			!graph_prepare_dynamic(grid[i], glyphs, width, height)) {
 			fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 			goto ARGUS_ERROR_GRAPHS_PREPARATION;
 		}
@@ -512,7 +507,7 @@ void argus_show() {
 			// Renders the window to update the shown data.
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			for (int i = 0; i < lines*columns; ++i) {
-				if (graph_prepare_dynamic(grid[i], glyphs, width, height)) {
+				if (!graph_prepare_dynamic(grid[i], glyphs, width, height)) {
 					fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 					goto ARGUS_ERROR_GRAPHS_PREPARATION;
 				}
@@ -528,13 +523,10 @@ ARGUS_ERROR_GRAPHS_PREPARATION:
 	for (int i = 0; i < lines*columns; ++i) {
 		graph_reset_graphics(grid[i]);
 	}
-	glyphs_free(glyphs);
+	glyphs_free(&glyphs);
 ARGUS_ERROR_GLYPHS_CREATION:
 ARGUS_ERROR_SHADERS_CREATION:
-	for (int i = 0; i < SHADER_LIST_SIZE; ++i) {
-		if (shaders[i]) shader_free(shaders[i]);
-		shaders[i] = NULL;
-	}
+	for (int i = 0; i < SHADERNAME_SIZE; ++i) shader_free(shaders+i);
 	SDL_GL_DeleteContext(context);
 	context = NULL;
 ARGUS_ERROR_CONTEXT_CREATION:

@@ -38,15 +38,19 @@ Graph *graph_create(Rect rect) {
 	return graph;
 }
 
-/// @brief Frees a graph.
-/// @param graph The graph to free.
-void graph_free(Graph *graph) {
+/// @brief Frees the memory allocated for a Graph.
+/// @param vao A pointer to the pointer of the Graph to be freed. Cannot be NULL.
+/// @note After freeing, the pointer *p_graph is set to NULL to avoid double-free.
+void graph_free(Graph **p_graph) {
+	Graph *graph = *p_graph;
+	if (!graph) return;
 	vao_free(&graph->background_vao);
 	vao_free(&graph->title_vao);
 	vao_free(&graph->grid_vao);
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
 	free(graph);
+	*p_graph = NULL;
 }
 
 /// @brief Prepares the static graphical components of a graph.
@@ -54,7 +58,7 @@ void graph_free(Graph *graph) {
 /// @param glyphs The glyphs set used to render text.
 /// @param window_width The width of the window.
 /// @param window_height The height of the window.
-/// @return true if there was an error.
+/// @return false if there was an error.
 bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
 	bool is_x_title = graph->x_axis.title && strlen(graph->x_axis.title);
 	bool is_y_title = graph->y_axis.title && strlen(graph->y_axis.title);
@@ -81,15 +85,15 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		int n;
 		float *vertices;
 		float *textures;
-		if (glyphs_generate_text_buffers(glyphs, &title_rect, graph->title, 
+		if (!glyphs_generate_text_buffers(glyphs, &title_rect, graph->title, 
 			(float)window_width/window_height, &vertices, &textures, &n)) {
 			fprintf(stderr, "[ARGUS]: error: unable to create buffer to store the data of the title of a graph !\n");
-			return true;
+			return false;
 		}
 		graph->title_vao = glyphs_generate_text_vao(vertices, textures, n);
 		if (!graph->title_vao) {
 			fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the title of a graph !\n");
-			return true;
+			return false;
 		}
 	}
 
@@ -116,8 +120,14 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	};
 
 	// Prepares the axis VAOs.
-	axis_prepare_x_title(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height);
-	axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height);
+	if (!axis_prepare_x_title(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height)) {
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the x axis title of a graph !\n");
+		return false;
+	}
+	if (!axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height)) {
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the y axis title of a graph !\n");
+		return false;
+	}
 
 	// Initializes the vertices for the background part.
 	float vertices[24] = {
@@ -157,24 +167,24 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	graph->background_vao = vao_create(data, sizes, gl_types, 12,2);
 	if (!graph->background_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph !\n");
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 
 }
 
 /// @brief Prepares the dynamic graphical components of a graph.
 /// @param graph The graph to prepare.
 /// @note This has to be called before each graph_render call.
-/// @return true if there was an error.
+/// @return false if there was an error.
 bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
 
 	// Prepares the grid VAO.
-	if (grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
+	if (!grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph !\n");
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 
 }
 

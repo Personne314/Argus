@@ -24,7 +24,7 @@ int sizeFromGLType(int type) {
 /// @param n Number of lists in data.
 /// @note n is the length of data, sizes, gl_types and n*sizes[i] is the len of data[i]. 
 /// @return The created VAO.
-VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, size_t n) {
+VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, int n) {
 
 	// Malloc the VAO structure.
 	VAO *vao = malloc(sizeof(VAO));
@@ -36,7 +36,7 @@ VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, size_
 	
 	// Creates the VBO.
 	int type_sizes[n];
-	for (size_t i = 0; i < n; ++i) type_sizes[i] = sizeFromGLType(gl_types[i]);
+	for (int i = 0; i < n; ++i) type_sizes[i] = sizeFromGLType(gl_types[i]);
 	vao->vbo = vbo_create(data, sizes, type_sizes, buffer_len, n);
 	if (!vao->vbo) {
 		fprintf(stderr, "[ARGUS]: error: unable to create a VBO for a VAO !\n");
@@ -49,7 +49,7 @@ VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, size_
 	glGenVertexArrays(1, &vao->vao_id);
 	vao_bind(vao);
 		vbo_bind(vao->vbo);
-			for (size_t i = 0; i < n; ++i) {
+			for (int i = 0; i < n; ++i) {
 				glVertexAttribPointer(i, sizes[i], gl_types[i], GL_FALSE, 0, (void*)(offset));
 				glEnableVertexAttribArray(i);
 				offset += sizes[i] * type_sizes[i] * buffer_len;
@@ -63,10 +63,9 @@ VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, size_
 }
 
 /// @brief Frees the memory allocated for a VAO.
-/// @param vao A pointer to the pointer of the VAO to be freed.
+/// @param vao A pointer to the pointer of the VAO to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_vao is set to NULL to avoid double-free.
 void vao_free(VAO **p_vao) {
-	if (!p_vao) return;
 	VAO *vao = *p_vao;
 	if (!vao) return;
 	if(glIsVertexArray(vao->vao_id) == GL_TRUE) {

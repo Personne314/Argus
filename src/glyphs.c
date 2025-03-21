@@ -153,11 +153,15 @@ Glyphs *glyphs_create(int size) {
 	return glyphs;
 }
 
-/// @brief Frees a glyphs structure.
-/// @param glyphs The glyphs to bind.
-void glyphs_free(Glyphs *glyphs) {
+/// @brief Frees the memory allocated for a Glyphs.
+/// @param vao A pointer to the pointer of the Glyphs to be freed. Cannot be NULL.
+/// @note After freeing, the pointer *p_glyphs is set to NULL to avoid double-free.
+void glyphs_free(Glyphs **p_glyphs) {
+	Glyphs *glyphs = *p_glyphs;
+	if (!p_glyphs) return;
 	glDeleteTextures(1, &glyphs->texture_id);
 	free(glyphs);
+	*p_glyphs = NULL;
 }
 
 /// @brief Binds the texture of the glyphs.
@@ -198,7 +202,7 @@ void glyphs_get_vertices(float *vertices, int offset, int id) {
 /// @param glyphs The glyphs set to use.
 /// @param p_rect Pointer on the rect that will contains the text.
 /// @param text The text to render.
-/// @return A VAO containing data to render the text using the texture in glyphs.
+/// @return false if there was an error.
 bool glyphs_generate_text_buffers(Glyphs *glyphs, Rect *p_rect, const char *text, 
 float screen_ratio, float **vertices, float **textures, int *n) {
 
@@ -225,13 +229,13 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 	*vertices = malloc(12*(*n)*sizeof(float));
 	if (!*vertices) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the vertices of a text VAO !\n");
-		return true;
+		return false;
 	}
 	*textures = malloc(12*(*n)*sizeof(float));
 	if (!*textures) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the texture vertices of a text VAO !\n");
 		free(*vertices);
-		return true;
+		return false;
 	}
 
 	// For each character, adds it to the vertices lists.
@@ -261,14 +265,14 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 		glyph_rect.x += glyph_rect.w;
 		++i;
 	}
-	return false;
+	return true;
 }
 
 /// @brief Creates buffers containing data to render a vertical text in a given rect.
 /// @param glyphs The glyphs set to use.
 /// @param p_rect Pointer on the rect that will contains the text.
 /// @param text The text to render.
-/// @return A VAO containing data to render the text using the texture in glyphs.
+/// @return false if there was an error.
 bool glyphs_generate_vertical_text_buffers(Glyphs *glyphs, Rect *p_rect, const char *text, 
 float screen_ratio, float **vertices, float **textures, int *n) {
 
@@ -296,13 +300,13 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 	*vertices = malloc(12*(*n)*sizeof(float));
 	if (!vertices) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the vertices of a text VAO !\n");
-		return true;
+		return false;
 	}
 	*textures = malloc(12*(*n)*sizeof(float));
 	if (!textures) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for the texture vertices of a text VAO !\n");
 		free(vertices);
-		return true;
+		return false;
 	}
 
 	// For each character, adds it to the vertices lists.
@@ -332,7 +336,7 @@ float screen_ratio, float **vertices, float **textures, int *n) {
 		glyph_rect.y -= glyph_rect.h;
 		++i;
 	}
-	return false;
+	return true;
 }
 	
 /// @brief Generates a VAO from buffers to render text.
@@ -345,9 +349,6 @@ VAO *glyphs_generate_text_vao(float *vertices, float *textures, int nb_char) {
 	int sizes[2] = {2,2};
 	int gl_types[2] = {GL_FLOAT, GL_FLOAT};
 	VAO *vao = vao_create(data, sizes, gl_types, 6*nb_char, 2);
-	if (!vao) {
-		fprintf(stderr, "[ARGUS]: error: unable to create a VAO for a text buffer !\n");	
-		return NULL;
-	}
+	if (!vao) fprintf(stderr, "[ARGUS]: error: unable to create a VAO for a text buffer !\n");	
 	return vao;
 }
