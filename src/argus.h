@@ -79,13 +79,13 @@ size_t argus_graph_get_current_curve_number();
 ////////////////////////////////////////////////////////////////
 
 // Sets the data size of the current curve in the current graph.
-void argus_graph_curve_set_size(size_t size);
+void argus_curve_set_size(size_t size);
 
 // Adds the x values of the current curve in the current graph.
-void argus_graph_curve_add_x(Vector *data);
+void argus_curve_add_x(Vector *data);
 
 // Adds the y values of the current curve in the current graph.
-void argus_graph_curve_add_y(Vector *data);
+void argus_curve_add_y(Vector *data);
 
 
 ////////////////////////////////////////////////////////////////

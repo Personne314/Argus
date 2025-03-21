@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 
 RingBuffer *ringbuffer_create(size_t cap) {
@@ -45,4 +46,13 @@ void ringbuffer_push_back(RingBuffer *buffer, float val) {
 	buffer->data[end] = val;
 	if (buffer->size < buffer->cap) ++buffer->size;
 	else ++buffer->start;
+}
+
+float ringbuffer_at(RingBuffer *buffer, size_t id) {
+	if (id >= buffer->size) {
+		fprintf(stderr, "[ARGUS]: error: The index %ld isn't in the RingBuffer !\n", id);
+		return NAN;
+	}
+	size_t val_id = (buffer->start + id) % buffer->cap;
+	return buffer->data[val_id];
 }

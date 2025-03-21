@@ -42,7 +42,7 @@ void render_curve(VAO *vao, bool continuous) {
 	if (!vao) return;
 	shader_use(shaders[SHADER_CURVE]);
 		vao_bind(vao);
-			glDrawArrays(continuous ? GL_LINE : GL_LINES, 0, vao->size);
+			glDrawArrays(continuous ? GL_LINE_STRIP : GL_LINES, 0, vao->size);
 		vao_bind(NULL);
 	shader_use(NULL);
 }

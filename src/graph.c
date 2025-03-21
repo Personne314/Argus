@@ -35,10 +35,10 @@ Graph *graph_create(Rect rect) {
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
-	graph->x_axis.min = 0.48;
-	graph->y_axis.min = 0.5;
-	graph->x_axis.max = 2.62;
-	graph->y_axis.max = 1.9;
+	graph->x_axis.min = 0;
+	graph->y_axis.min = -1;
+	graph->x_axis.max = 3;
+	graph->y_axis.max = 1;
 
 	// Creates the curves vector.
 	graph->curves = curves_create();
@@ -197,6 +197,14 @@ bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int w
 		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph !\n");
 		return false;
 	}
+
+	for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+		if (!curve_prepare_dynamic(graph->curves->data[i], &graph->x_axis, &graph->y_axis, graph->grid_rect)) {
+			fprintf(stderr, "[ARGUS]: error: unable to create the vao of a curve !\n");
+			return false;
+		}
+	}
+
 	return true;
 
 }
@@ -215,6 +223,7 @@ void graph_reset_graphics(Graph *graph) {
 /// @param graph The graph to render.
 /// @param glyphs The glyphs set to use to render texts.
 void graph_render(Graph *graph, Glyphs *glyphs) {
+	
 	render_shape(graph->background_vao, 1.0f);
 	render_text(glyphs, graph->title_vao, graph->title_color);
 	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
@@ -222,4 +231,9 @@ void graph_render(Graph *graph, Glyphs *glyphs) {
 	render_curve(graph->grid_vao, false);
 	render_text(glyphs, graph->x_axis.axis_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.axis_vao, graph->text_color);
+
+	for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+		render_curve(graph->curves->data[i]->curve_vao, true);
+	}
+
 }

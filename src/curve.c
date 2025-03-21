@@ -15,6 +15,7 @@ Curve *curve_create() {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a Curve\n");
 		return NULL;
 	}
+	curve->curve_vao = NULL;
 	curve->x_min = FLT_MAX;
 	curve->x_max = FLT_MIN;
 	curve->y_min = FLT_MAX;
@@ -30,6 +31,7 @@ Curve *curve_create() {
 void curve_free(Curve **p_curve) {
 	Curve *curve = *p_curve;
 	if (!curve) return;
+	vao_free(&curve->curve_vao);
 	ringbuffer_free(&curve->x_val);
 	ringbuffer_free(&curve->y_val);
 	free(curve);
@@ -81,6 +83,69 @@ void curve_push_y_data(Curve *curve, Vector *data) {
 		if (val > curve->y_max) curve->y_max = val;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis, const Rect rect) {
+	vao_free(&curve->curve_vao);
+
+	if (curve->x_val->size != curve->y_val->size) {
+		fprintf(stderr, "[ARGUS]: error: the curve x and y buffers are not of the same size!\n");
+		return false;
+	}
+	const size_t size = curve->x_val->size;
+	if (size <= 1) {
+		fprintf(stderr, "[ARGUS]: warning: the curve does not contain enough data to draw a curve!\n");
+		return true;
+	}
+
+	const float x_min = x_axis->min;
+	const float x_max = x_axis->max;
+	const float y_min = y_axis->min;
+	const float y_max = y_axis->max;
+
+	Vector *point_vec = vector_create(64);
+	vector_push_back(point_vec, rect.x + rect.w*(ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min));
+	vector_push_back(point_vec, rect.y + rect.h*(ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min));
+
+	for (size_t i = 1; i < size; ++i) {
+		float x = rect.x + rect.w*(ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
+		float y = rect.y + rect.h*(ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
+		vector_push_back(point_vec, x);
+		vector_push_back(point_vec, y);
+	}
+
+	void *data = point_vec->data;
+	int sizes = 2;
+	int gl_types = GL_FLOAT;
+	curve->curve_vao = vao_create(&data, &sizes, &gl_types, vector_size(point_vec)/2,1);
+	vector_free(&point_vec);
+	if (!curve->curve_vao) {
+		fprintf(stderr, "[ARGUS]: error: unable to create a VAO for a curve !\n");
+		return false;
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /// @brief Creates a VAO for a curve.
 /// @param x_val x coordinates of the points.

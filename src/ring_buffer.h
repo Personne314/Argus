@@ -16,3 +16,5 @@ void ringbuffer_free(RingBuffer **p_buffer);
 
 void ringbuffer_clear(RingBuffer *buffer);
 void ringbuffer_push_back(RingBuffer *buffer, float val);
+
+float ringbuffer_at(RingBuffer *buffer, size_t id);

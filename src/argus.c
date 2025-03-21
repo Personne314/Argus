@@ -449,7 +449,7 @@ size_t argus_graph_get_current_curve_number() {
 ////////////////////////////////////////////////////////////////
 
 /// @brief Sets the data size of the current curve in the current graph.
-void argus_graph_curve_set_size(size_t size) {
+void argus_curve_set_size(size_t size) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {
 		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The size won't change.\n");	
@@ -460,7 +460,7 @@ void argus_graph_curve_set_size(size_t size) {
 }
 
 /// @brief Sets the x values of the current curve in the current graph.
-void argus_graph_data_add_x(Vector *data) {
+void argus_curve_add_x(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {
 		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The x data won't change.\n");	
@@ -471,7 +471,7 @@ void argus_graph_data_add_x(Vector *data) {
 }
 
 /// @brief Sets the y values of the current curve in the current graph.
-void argus_graph_data_add_y(Vector *data) {
+void argus_curve_add_y(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {
 		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The y data won't change.\n");	

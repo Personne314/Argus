@@ -2,6 +2,8 @@
 
 #include "ring_buffer.h"
 #include "vector.h"
+#include "axis.h"
+#include "structs.h"
 #include "vao.h"
 
 
@@ -9,6 +11,7 @@
 /// @struct Curve
 /// @brief Represents a curve with associated data buffers and axis limits.
 typedef struct {
+	VAO *curve_vao;
     RingBuffer *x_val;	///< Buffer storing x-axis values.
     RingBuffer *y_val;	///< Buffer storing y-axis values.
     float x_min;	///< Minimum x-axis value.
@@ -33,6 +36,10 @@ void curve_push_x_data(Curve *curve, Vector *data);
 
 // Pushes new y-axis data into the curve's buffer.
 void curve_push_y_data(Curve *curve, Vector *data);
+
+
+bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis, const Rect rect);
+
 
 // Creates a VAO for a curve.
 VAO *curve_prepare_vao(float *x_val, float *y_val, int n);
