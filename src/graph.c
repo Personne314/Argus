@@ -219,7 +219,7 @@ void graph_render(Graph *graph, Glyphs *glyphs) {
 	render_text(glyphs, graph->title_vao, graph->title_color);
 	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.title_vao, graph->text_color);
-	render_curve(graph->grid_vao);
+	render_curve(graph->grid_vao, false);
 	render_text(glyphs, graph->x_axis.axis_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.axis_vao, graph->text_color);
 }

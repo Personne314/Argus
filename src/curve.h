@@ -18,7 +18,13 @@ typedef struct Curve Curve;
 
 
 Curve *curve_create();
-void curve_free(Curve **curve);
+void curve_free(Curve **p_curve);
+
+void curve_set_data_cap(Curve *curve, size_t cap);
+
+void curve_push_x_data(Curve *curve, Vector *data);
+void curve_push_y_data(Curve *curve, Vector *data);
+
 
 
 // Creates a VAO for a curve.

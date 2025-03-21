@@ -9,13 +9,36 @@
 
 
 Curve *curve_create() {
-	return NULL;
+	Curve *curve = malloc(sizeof(Curve));
+	if (!curve) {
+		fprintf(stderr, "[ARGUS]: error: unable to malloc a Curve\n");
+		return NULL;
+	}
+	curve->x_min = 0.0f;
+	curve->x_max = 0.0f;
+	curve->y_min = 0.0f;
+	curve->y_max = 0.0f;
+	curve->x_val = NULL;
+	curve->y_val = NULL;
+	return curve;
 }
 
 void curve_free(Curve **p_curve) {
-
+	Curve *curve = *p_curve;
+	if (!curve) return;
+	ringbuffer_free(&curve->x_val);
+	ringbuffer_free(&curve->y_val);
+	free(curve);
+	*p_curve = NULL;
 }
 
+
+void curve_set_data_cap(Curve *curve, size_t cap) {
+	ringbuffer_free(&curve->x_val);
+	ringbuffer_free(&curve->y_val);
+	curve->x_val = ringbuffer_create(cap);
+	curve->y_val = ringbuffer_create(cap);
+}
 
 
 

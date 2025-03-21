@@ -16,7 +16,6 @@ RingBuffer *ringbuffer_create(size_t cap) {
 	}
 	buffer->size = 0;
 	buffer->start = 0;
-	buffer->end = 0;
 	buffer->cap = cap;
 	buffer->data = malloc(sizeof(float) * cap);
 	if (!buffer->data) {
@@ -36,6 +35,14 @@ void ringbuffer_free(RingBuffer **p_buffer) {
 }
 
 
-void ringbuffer_copy_vector(Vector *vector) {
-	
+void ringbuffer_clear(RingBuffer *buffer) {
+	buffer->start = 0;
+	buffer->size = 0;
+}
+
+void ringbuffer_push_back(RingBuffer *buffer, float val) {
+	size_t end = (buffer->start + buffer->size) % buffer->cap;
+	buffer->data[end] = val;
+	if (buffer->size < buffer->cap) ++buffer->size;
+	else ++buffer->start;
 }
