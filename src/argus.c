@@ -40,6 +40,9 @@ static float offset_width;	///< Width of the offsets between each graph.
 static float offset_height;	///< Height of the offsets between each graph.
 static Graph **grid;		///< Graphs grid.
 
+// Current curve id.
+static int current_curve;
+
 // Update function.
 static void (*update_func)(void*, double);	///< Function used to update the graph data.
 static void* update_args;	///< Arguments to give to the update function.
@@ -129,6 +132,7 @@ void argus_init() {
 	dt = 1.0;
 	width = 640;
 	height = 480;
+	current_line = -1;
 	title = "ARGUS Window";
 
 	// Malloc the initial grid.
@@ -304,6 +308,7 @@ void argus_set_current_graph(int x, int y) {
 	}
 	current_line = y;
 	current_column = x;
+	current_curve = -1;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -385,6 +390,56 @@ void argus_graph_set_y_title(const char *axis_title) {
 void argus_graph_set_text_color(Color c) {
 	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->text_color = c;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Adds a new curve to the current graph.
+void argus_graph_add_curve() {
+	CHECK_INIT(init, argus_mutex)
+	vector_push_back(CURRENT_GRAPH->curves, NULL);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Removes the current curve from the current graph.
+void argus_graph_remove_curve() {
+	CHECK_INIT(init, argus_mutex)
+	
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the curve currently being manipulated.
+void argus_graph_set_current_curve(int id) {
+	CHECK_INIT(init, argus_mutex)
+	
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////
+//                      Data functions                        //
+////////////////////////////////////////////////////////////////
+
+/// @brief Sets the data size of the current curve in the current graph.
+void argus_graph_curve_set_size(size_t size) {
+	CHECK_INIT(init, argus_mutex)
+	
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the x values of the current curve in the current graph.
+void argus_graph_data_set_x(float *data) {
+	CHECK_INIT(init, argus_mutex)
+	
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the y values of the current curve in the current graph.
+void argus_graph_data_set_y(float *data) {
+	CHECK_INIT(init, argus_mutex)
+	
 	pthread_mutex_unlock(&argus_mutex);
 }
 

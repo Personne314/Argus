@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "vao.h"
+#include "vector.h"
 #include "shader.h"
 #include "glyphs.h"
 #include "structs.h"
@@ -13,18 +14,19 @@
 /// @struct Graph
 /// @brief Constains all the components to render a graph.
 typedef struct {
-	Axis x_axis;	// X Axis.
-	Axis y_axis;	// Y Axis.
-	Rect rect;		// The rect of the graph.
-	Rect grid_rect;	// The rect of the grid of the graph.
+	Axis x_axis;			// X Axis.
+	Axis y_axis;			// Y Axis.
+	Rect rect;				// The rect of the graph.
+	Rect grid_rect;			// The rect of the grid of the graph.
 	Color background_color;	// The color of the background of the graph.
 	Color graph_color;		// The color of the graph.
 	Color title_color;		// The color of the title of the graph.
 	Color text_color;		// The color of all of the texts in the graph.
-	VAO *grid_vao;		// VAO for the grid of the graph.
+	Vector *curves;			// List of the curves to draw.
+	VAO *grid_vao;			// VAO for the grid of the graph.
 	VAO *background_vao;	// VAO for the background of the graph.
-	VAO *title_vao;		// VAO for the graph title.
-	const char *title;	// The graph title.
+	VAO *title_vao;			// VAO for the graph title.
+	const char *title;		// The graph title.
 } Graph;
 
 

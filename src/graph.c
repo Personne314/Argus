@@ -14,11 +14,15 @@
 /// @param rect The rect containing the graph in the window.
 /// @return The created graph.
 Graph *graph_create(Rect rect) {
+	
+	// Malloc the graph.
 	Graph *graph = malloc(sizeof(Graph));
 	if (!graph) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph\n");
 		return NULL;
 	}
+
+	// Initializes the graph.
 	graph->x_axis = AXIS_INIT;
 	graph->y_axis = AXIS_INIT;
 	graph->rect = rect;
@@ -35,6 +39,14 @@ Graph *graph_create(Rect rect) {
 	graph->y_axis.min = 0.5;
 	graph->x_axis.max = 2.62;
 	graph->y_axis.max = 1.9;
+
+	// Creates the curves vector.
+	graph->curves = vector_create(1);
+	if (!graph->curves) {
+		fprintf(stderr, "[ARGUS]: error: unable to creates the curves Vector of a Graph\n");
+		free(graph);
+		return NULL;
+	}
 	return graph;
 }
 
@@ -44,6 +56,7 @@ Graph *graph_create(Rect rect) {
 void graph_free(Graph **p_graph) {
 	Graph *graph = *p_graph;
 	if (!graph) return;
+	vector_free(&graph->curves);
 	vao_free(&graph->background_vao);
 	vao_free(&graph->title_vao);
 	vao_free(&graph->grid_vao);

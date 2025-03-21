@@ -1,6 +1,7 @@
 #pragma once
 
 #include "structs.h"
+#include "vector.h"
 
 
 
@@ -59,6 +60,29 @@ void argus_graph_set_y_title(const char *axis_title);
 
 // Sets the current graph text color.
 void argus_graph_set_text_color(Color c);
+
+// Adds a new curve to the current graph.
+void argus_graph_add_curve();
+
+// Removes the current curve from the current graph.
+void argus_graph_remove_curve();
+
+// Sets the curve currently being manipulated.
+void argus_graph_set_current_curve(int id);
+
+
+////////////////////////////////////////////////////////////////
+//                      Curve functions                       //
+////////////////////////////////////////////////////////////////
+
+// Sets the data size of the current curve in the current graph.
+void argus_graph_curve_set_size(size_t size);
+
+// Sets the x values of the current curve in the current graph.
+void argus_graph_curve_set_x(Vector *data);
+
+// Sets the y values of the current curve in the current graph.
+void argus_graph_curve_set_y(Vector *data);
 
 
 ////////////////////////////////////////////////////////////////

@@ -34,11 +34,10 @@ Vector *vector_create(size_t cap) {
 }
 
 /// @brief Frees the memory allocated for a vector and its data buffer.
-/// @param p_vector A pointer to the pointer of the vector to be freed.
+/// @param p_vector A pointer to the pointer of the vector to be freed. Cannot be NULL.
 /// @note If the pointer to the vector (p_vector) or the vector itself (*p_vector) is NULL, this function does nothing.
 /// @note After freeing, the pointer *p_vector is set to NULL to avoid double-free.
 void vector_free(Vector **p_vector) {
-	if (!p_vector) return;
 	Vector *vector = *p_vector;
 	if (!vector) return;
 	free(vector->data);
