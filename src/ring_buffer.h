@@ -12,7 +12,7 @@ typedef struct {
 
 
 RingBuffer *ringbuffer_create(size_t cap);
-void ringbuffer_free(RingBuffer *buffer);
+void ringbuffer_free(RingBuffer **p_buffer);
 
-void ringbuffer_clear(RingBuffer **p_buffer);
+void ringbuffer_clear(RingBuffer *buffer);
 void ringbuffer_push_back(RingBuffer *buffer, float val);

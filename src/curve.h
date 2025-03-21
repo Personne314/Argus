@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ring_buffer.h"
+#include "vector.h"
 #include "vao.h"
 
 
