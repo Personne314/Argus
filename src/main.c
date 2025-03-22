@@ -21,14 +21,14 @@ int main(int argc, char *argv[]) {
 	Vector *x = vector_create(4);
 	Vector *y = vector_create(4);
 
-	vector_push_back(x, 0);
+	vector_push_back(x, -0.5);
 	vector_push_back(x, 1);
 	vector_push_back(x, 2);
-	vector_push_back(x, 3);
+	vector_push_back(x, 4.5);
 
 	vector_push_back(y, 0);
-	vector_push_back(y, 1);
-	vector_push_back(y, -1);
+	vector_push_back(y, 1.5);
+	vector_push_back(y, -1.5);
 	vector_push_back(y, 0);
 
 	argus_graph_add_curve();

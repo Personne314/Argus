@@ -1,6 +1,7 @@
 #include "curve.h"
 
 #include <float.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -96,6 +97,7 @@ void curve_push_y_data(Curve *curve, Vector *data) {
 bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis, const Rect rect) {
 	vao_free(&curve->curve_vao);
 
+	// Gets the number of points int the curve.
 	if (curve->x_val->size != curve->y_val->size) {
 		fprintf(stderr, "[ARGUS]: error: the curve x and y buffers are not of the same size!\n");
 		return false;
@@ -106,22 +108,57 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 		return true;
 	}
 
+	// Gets the axis limits.
 	const float x_min = x_axis->min;
 	const float x_max = x_axis->max;
 	const float y_min = y_axis->min;
 	const float y_max = y_axis->max;
 
+	// Creates the buffer to store the points.
 	Vector *point_vec = vector_create(64);
-	vector_push_back(point_vec, rect.x + rect.w*(ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min));
-	vector_push_back(point_vec, rect.y + rect.h*(ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min));
-
-	for (size_t i = 1; i < size; ++i) {
-		float x = rect.x + rect.w*(ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
-		float y = rect.y + rect.h*(ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
-		vector_push_back(point_vec, x);
-		vector_push_back(point_vec, y);
+	if (!point_vec) {
+		fprintf(stderr, "[ARGUS]: error: unable to create a vector to store curve points!\n");
+		return false;
 	}
 
+
+
+
+
+
+
+
+	float x_prev = (ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min);
+	float y_prev = (ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
+
+	size_t i = 0;
+	bool curve_started = false;
+	while (i < size) {
+		float x = (ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
+		float y = (ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
+
+		if (curve_started) {
+
+
+
+		} else {
+			if (x >= x_min && x <= x_max && y >= y_min && y <= y_max) {
+				// POINT 2 DANS LE RECTANGLE, 1 DEHORS.
+			} else 
+
+		}
+
+		x_prev = x;
+		y_prev = y;
+		++i;
+	}
+
+
+
+
+
+
+	// Creates the VAO.
 	void *data = point_vec->data;
 	int sizes = 2;
 	int gl_types = GL_FLOAT;
