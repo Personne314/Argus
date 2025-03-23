@@ -440,6 +440,34 @@ size_t argus_graph_get_current_curve_number() {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the auto-adapt parameter for both axis.
+/// @note If true, the axis min/max will be automatically changed to match the contained curves.
+/// @param adapt The value of the auto-adapt parameter.
+void argus_graph_auto_adapt(bool adapt) {
+	CHECK_INIT(init, argus_mutex)
+	CURRENT_GRAPH->x_axis.auto_adapt = adapt;
+	CURRENT_GRAPH->y_axis.auto_adapt = adapt;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the auto-adapt parameter for x axis.
+/// @note If true, the axis min/max will be automatically changed to match the contained curves.
+/// @param adapt The value of the auto-adapt parameter.
+void argus_graph_auto_adapt_x(bool adapt) {
+	CHECK_INIT(init, argus_mutex)
+	CURRENT_GRAPH->x_axis.auto_adapt = adapt;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the auto-adapt parameter for y axis.
+/// @note If true, the axis min/max will be automatically changed to match the contained curves.
+/// @param adapt The value of the auto-adapt parameter.
+void argus_graph_auto_adapt_y(bool adapt) {
+	CHECK_INIT(init, argus_mutex)
+	CURRENT_GRAPH->y_axis.auto_adapt = adapt;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
 
 
 

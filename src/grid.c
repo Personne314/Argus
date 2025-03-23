@@ -23,7 +23,8 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	vao_free(&graph->grid_vao);
 	graph->grid_vao = NULL;
 	if (graph->x_axis.min >= graph->x_axis.max || graph->y_axis.min >= graph->y_axis.max) {
-		fprintf(stderr, "[ARGUS]: error: The axis min and max value are invalid !\n");
+		fprintf(stderr, "[ARGUS]: error: The axis min and max value are invalid! x_min:%f, x_max:%f ; "
+			"y_min:%f, y_max:%f\n", graph->x_axis.min, graph->x_axis.max, graph->y_axis.min, graph->y_axis.max);
 		return false;
 	}
 

@@ -73,6 +73,15 @@ void argus_graph_set_current_curve(size_t id);
 // Returns the number of curves in the current graph.
 size_t argus_graph_get_current_curve_number();
 
+// Sets the auto-adapt parameter for both axis.
+void argus_graph_auto_adapt(bool adapt);
+
+// Sets the auto-adapt parameter for x axis.
+void argus_graph_auto_adapt_x(bool adapt);
+
+// Sets the auto-adapt parameter for y axis.
+void argus_graph_auto_adapt_y(bool adapt);
+
 
 ////////////////////////////////////////////////////////////////
 //                      Curve functions                       //

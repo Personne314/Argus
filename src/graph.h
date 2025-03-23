@@ -27,6 +27,7 @@ typedef struct {
 	VAO *background_vao;	// VAO for the background of the graph.
 	VAO *title_vao;			// VAO for the graph title.
 	const char *title;		// The graph title.
+	
 } Graph;
 
 

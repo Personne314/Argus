@@ -13,15 +13,14 @@ struct Axis {
 	VAO *axis_vao;		// VAO to render the graduations.
 	VAO *title_vao;		// VAO to render the title.
 	const char *title;	// Title of the axis.
-	float min;		// Min value of the axis.
-	float max;		// Max value of the axis.
+	float min;			// Min value of the axis.
+	float max;			// Max value of the axis.
 	bool auto_adapt;	// true if the axis min and max must be updated to match the curves.
-	bool log;		// true if the axis is logarithmic.
 };
 typedef struct Axis Axis;
 
 // Default axis value.
-#define AXIS_INIT (Axis){NULL, NULL, NULL, 0.0f, 0.0f, true, false}
+#define AXIS_INIT (Axis){NULL, NULL, NULL, 0.0f, 0.0f, true}
 
 
 // Prepares the x axis title.

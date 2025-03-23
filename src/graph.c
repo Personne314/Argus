@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 
 #include "structs.h"
 #include "render.h"
@@ -192,19 +193,41 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 /// @return false if there was an error.
 bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
 
+	// Adapt the x axis if needed.
+	if (graph->x_axis.auto_adapt && curves_size(graph->curves)) {
+		graph->x_axis.min = FLT_MAX;
+		graph->x_axis.max = FLT_MIN;
+		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+			const Curve *curve = graph->curves->data[i];
+			if (graph->x_axis.min > curve->x_min) graph->x_axis.min = curve->x_min;
+			if (graph->x_axis.max < curve->x_max) graph->x_axis.max = curve->x_max;
+		}
+	}
+
+	// Adapt the y axis if needed.
+	if (graph->y_axis.auto_adapt && curves_size(graph->curves)) {
+		graph->y_axis.min = FLT_MAX;
+		graph->y_axis.max = FLT_MIN;
+		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+			const Curve *curve = graph->curves->data[i];
+			if (graph->y_axis.min > curve->y_min) graph->y_axis.min = curve->y_min;
+			if (graph->y_axis.max < curve->y_max) graph->y_axis.max = curve->y_max;
+		}
+	}
+
 	// Prepares the grid VAO.
 	if (!grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph !\n");
 		return false;
 	}
 
+	// Prepares the curves VAOs.
 	for (size_t i = 0; i < curves_size(graph->curves); ++i) {
 		if (!curve_prepare_dynamic(graph->curves->data[i], &graph->x_axis, &graph->y_axis, graph->grid_rect)) {
 			fprintf(stderr, "[ARGUS]: error: unable to create the vao of a curve !\n");
 			return false;
 		}
 	}
-
 	return true;
 
 }
