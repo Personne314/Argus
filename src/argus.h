@@ -81,6 +81,9 @@ size_t argus_graph_get_current_curve_number();
 // Sets the data size of the current curve in the current graph.
 void argus_curve_set_size(size_t size);
 
+// Sets the color of the current curve in the current graph.
+void argus_curve_set_color(Color color);
+
 // Adds the x values of the current curve in the current graph.
 void argus_curve_add_x(Vector *data);
 

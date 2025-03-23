@@ -17,6 +17,7 @@ Curve *curve_create() {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc a Curve\n");
 		return NULL;
 	}
+	curve->color = COLOR_BLACK;
 	curve->curve_vao = NULL;
 	curve->x_min = FLT_MAX;
 	curve->x_max = FLT_MIN;

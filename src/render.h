@@ -4,6 +4,7 @@
 #include "glyphs.h"
 #include "shader.h"
 #include "vao.h"
+#include "structs.h"
 
 
 // Renders a text VAO.
@@ -13,4 +14,4 @@ void render_text(Glyphs *glyphs, VAO *vao, Color color);
 void render_shape(VAO *vao, float transparency);
 
 // Renders a curve from a VAO with a given transparency.
-void render_curve(VAO *vao, bool continuous);
+void render_curve(VAO *vao, Color color, bool continuous);

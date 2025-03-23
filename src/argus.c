@@ -449,6 +449,8 @@ size_t argus_graph_get_current_curve_number() {
 ////////////////////////////////////////////////////////////////
 
 /// @brief Sets the data size of the current curve in the current graph.
+/// @param size The size of the data buffer.
+/// @note size must be greater than 0.
 void argus_curve_set_size(size_t size) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {
@@ -459,7 +461,20 @@ void argus_curve_set_size(size_t size) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the color of the current curve in the current graph.
+/// @param color The color of the curve.
+void argus_curve_set_color(Color color) {
+	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The color won't change.\n");	
+		return;
+	}
+	CURRENT_CURVE->color = color;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
 /// @brief Sets the x values of the current curve in the current graph.
+/// @param data The vector containing the data to add to the curve.
 void argus_curve_add_x(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {
@@ -471,6 +486,7 @@ void argus_curve_add_x(Vector *data) {
 }
 
 /// @brief Sets the y values of the current curve in the current graph.
+/// @param data The vector containing the data to add to the curve.
 void argus_curve_add_y(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
 	if (current_curve < 0) {

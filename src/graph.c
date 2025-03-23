@@ -158,7 +158,7 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		graph_rect.x+graph_rect.w,graph_rect.y+graph_rect.h
 	};
 	
-	// Initializes the colorsof the vertices for the background part.
+	// Initializes the colors of the vertices for the background part.
 	float colors[48];
 	for (int i = 0; i < 6; ++i) {
 		colors[4*i] =	graph->background_color.r;
@@ -223,17 +223,15 @@ void graph_reset_graphics(Graph *graph) {
 /// @param graph The graph to render.
 /// @param glyphs The glyphs set to use to render texts.
 void graph_render(Graph *graph, Glyphs *glyphs) {
-	
 	render_shape(graph->background_vao, 1.0f);
 	render_text(glyphs, graph->title_vao, graph->title_color);
 	render_text(glyphs, graph->x_axis.title_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.title_vao, graph->text_color);
-	render_curve(graph->grid_vao, false);
 	render_text(glyphs, graph->x_axis.axis_vao, graph->text_color);
 	render_text(glyphs, graph->y_axis.axis_vao, graph->text_color);
-
 	for (size_t i = 0; i < curves_size(graph->curves); ++i) {
-		render_curve(graph->curves->data[i]->curve_vao, true);
+		Curve *curve = graph->curves->data[i];
+		render_curve(curve->curve_vao, curve->color, true);
 	}
-
+	render_curve(graph->grid_vao, graph->text_color, false);
 }

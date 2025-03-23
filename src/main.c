@@ -36,9 +36,7 @@ int main(int argc, char *argv[]) {
 	argus_curve_set_size(4);
 	argus_curve_add_x(x);
 	argus_curve_add_y(y);
-
-
-
+	argus_curve_set_color(COLOR_TEAL);
 	argus_show();
 
 	vector_free(&x);

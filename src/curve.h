@@ -11,6 +11,7 @@
 /// @struct Curve
 /// @brief Represents a curve with associated data buffers and axis limits.
 typedef struct {
+    Color color;
 	VAO *curve_vao;
     RingBuffer *x_val;	///< Buffer storing x-axis values.
     RingBuffer *y_val;	///< Buffer storing y-axis values.

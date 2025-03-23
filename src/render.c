@@ -38,10 +38,14 @@ void render_shape(VAO *vao, float transparency) {
 
 /// @brief Renders a curve from a VAO with a given transparency.
 /// @param vao VAO of the curve to render.
-void render_curve(VAO *vao, bool continuous) {
+void render_curve(VAO *vao, Color color, bool continuous) {
 	if (!vao) return;
 	shader_use(shaders[SHADER_CURVE]);
 		vao_bind(vao);
+			glUniform3f(
+				shader_uniform_location(shaders[SHADER_TEXT], "color"), 
+				color.r, color.g, color.b
+			);
 			glDrawArrays(continuous ? GL_LINE_STRIP : GL_LINES, 0, vao->size);
 		vao_bind(NULL);
 	shader_use(NULL);
