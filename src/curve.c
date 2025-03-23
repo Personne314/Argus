@@ -87,6 +87,42 @@ void curve_push_y_data(Curve *curve, Vector *data) {
 	}
 }
 
+/// @brief Pushes new x-axis data into the curve's buffer.
+/// @param curve Pointer to the curve receiving the new data.
+/// @param data The raw buffer containing the data.
+/// @param n The number of values to add.
+/// @note n must be lower or equal to the length of data.
+void curve_push_x_data_raw(Curve *curve, float *data, size_t n) {
+	if (n + curve->x_val->size > curve->x_val->cap) {
+		fprintf(stderr, "[ARGUS]: warning: the space left in the buffer of the x axis of a graph "
+			"is lower than the amount of data that will be pushed. The oldset data will be erased.\n");
+	}
+	for (size_t i = 0; i < n; ++i) {
+		const float val = data[i];
+		ringbuffer_push_back(curve->x_val, val);
+		if (val < curve->x_min) curve->x_min = val;
+		if (val > curve->x_max) curve->x_max = val;
+	}
+}
+
+/// @brief Pushes new y-axis data into the curve's buffer.
+/// @param curve Pointer to the curve receiving the new data.
+/// @param data The raw buffer containing the data.
+/// @param n The number of values to add.
+/// @note n must be lower or equal to the length of data.
+void curve_push_y_data_raw(Curve *curve, float *data, size_t n) {
+	if (n + curve->y_val->size > curve->y_val->cap) {
+		fprintf(stderr, "[ARGUS]: warning: the space left in the buffer of the y axis of a graph "
+			"is lower than the amount of data that will be pushed. The oldset data will be erased.\n");
+	}
+	for (size_t i = 0; i < n; ++i) {
+		const float val = data[i];
+		ringbuffer_push_back(curve->y_val, val);
+		if (val < curve->y_min) curve->y_min = val;
+		if (val > curve->y_max) curve->y_max = val;
+	}
+}
+
 /// @brief Prepares the VAO of a curve in a given graph.
 /// @param curve The curve to prepare.
 /// @param x_axis The x axis of the graph.

@@ -38,7 +38,13 @@ void curve_push_x_data(Curve *curve, Vector *data);
 // Pushes new y-axis data into the curve's buffer.
 void curve_push_y_data(Curve *curve, Vector *data);
 
+// Pushes new x-axis data into the curve's buffer.
+void curve_push_x_data_raw(Curve *curve, float *data, size_t n);
 
+// Pushes new y-axis data into the curve's buffer.
+void curve_push_y_data_raw(Curve *curve, float *data, size_t n);
+
+// Prepares the VAO of a curve in a given graph.
 bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis, const Rect rect);
 
 

@@ -18,13 +18,8 @@ int main(int argc, char *argv[]) {
 	argus_graph_set_x_title("Amplitude (mV)");
 	argus_graph_set_y_title("Temps (ms)");
 
-	Vector *x = vector_create(4);
+	float x[4] = {-0.5,1,2,4.5};
 	Vector *y = vector_create(4);
-
-	vector_push_back(x, -0.5);
-	vector_push_back(x, 1);
-	vector_push_back(x, 2);
-	vector_push_back(x, 4.5);
 
 	vector_push_back(y, 0);
 	vector_push_back(y, 1.5);
@@ -34,12 +29,11 @@ int main(int argc, char *argv[]) {
 	argus_graph_add_curve();
 	argus_graph_set_current_curve(0);
 	argus_curve_set_size(4);
-	argus_curve_add_x(x);
+	argus_curve_add_x_raw(x, 4);
 	argus_curve_add_y(y);
 	argus_curve_set_color(COLOR_TEAL);
 	argus_show();
 
-	vector_free(&x);
 	vector_free(&y);
 
 	argus_quit();

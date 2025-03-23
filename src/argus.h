@@ -84,11 +84,17 @@ void argus_curve_set_size(size_t size);
 // Sets the color of the current curve in the current graph.
 void argus_curve_set_color(Color color);
 
-// Adds the x values of the current curve in the current graph.
+// Adds data to the x values of the current curve in the current graph.
 void argus_curve_add_x(Vector *data);
 
-// Adds the y values of the current curve in the current graph.
+// Adds data to the y values of the current curve in the current graph.
 void argus_curve_add_y(Vector *data);
+
+// Adds data to the x values of the current curve in the current graph.
+void argus_curve_add_x_raw(float *data, size_t n);
+
+// Adds data to the y values of the current curve in the current graph.
+void argus_curve_add_y_raw(float *data, size_t n);
 
 
 ////////////////////////////////////////////////////////////////

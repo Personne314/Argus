@@ -473,7 +473,7 @@ void argus_curve_set_color(Color color) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the x values of the current curve in the current graph.
+/// @brief Adds data to the x values of the current curve in the current graph.
 /// @param data The vector containing the data to add to the curve.
 void argus_curve_add_x(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
@@ -485,7 +485,7 @@ void argus_curve_add_x(Vector *data) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the y values of the current curve in the current graph.
+/// @brief Adds data to the y values of the current curve in the current graph.
 /// @param data The vector containing the data to add to the curve.
 void argus_curve_add_y(Vector *data) {
 	CHECK_INIT(init, argus_mutex)
@@ -494,6 +494,34 @@ void argus_curve_add_y(Vector *data) {
 		return;
 	}
 	curve_push_y_data(CURRENT_CURVE, data);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Adds data to the x values of the current curve in the current graph.
+/// @param data The raw buffer containing the data.
+/// @param n The number of values to add.
+/// @note n must be lower or equal to the length of data.
+void argus_curve_add_x_raw(float *data, size_t n) {
+	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The x data won't change.\n");	
+		return;
+	}
+	curve_push_x_data_raw(CURRENT_CURVE, data, n);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Adds data to the y values of the current curve in the current graph.
+/// @param data The raw buffer containing the data.
+/// @param n The number of values to add.
+/// @note n must be lower or equal to the length of data.
+void argus_curve_add_y_raw(float *data, size_t n) {
+	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The y data won't change.\n");	
+		return;
+	}
+	curve_push_y_data_raw(CURRENT_CURVE, data, n);
 	pthread_mutex_unlock(&argus_mutex);
 }
 
