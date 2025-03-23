@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "point.h"
 
 
 
@@ -85,15 +86,12 @@ void curve_push_y_data(Curve *curve, Vector *data) {
 	}
 }
 
-
-
-
-
-
-
-
-
-
+/// @brief Prepares the VAO of a curve in a given graph.
+/// @param curve The curve to prepare.
+/// @param x_axis The x axis of the graph.
+/// @param y_axis The y axis of the graph.
+/// @param rect The rect of the graph where to draw the curve.
+/// @return false if there was an error.
 bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis, const Rect rect) {
 	vao_free(&curve->curve_vao);
 
@@ -121,42 +119,61 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 		return false;
 	}
 
-
-
-
-
-
-
-
-	float x_prev = (ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min);
-	float y_prev = (ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
-
-	size_t i = 0;
+	// Adds all the points of the curve if they're visible.
 	bool curve_started = false;
+	size_t i = 0;
+	Point prev, current;
+	prev.x = (ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min);
+	prev.y = (ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
 	while (i < size) {
-		float x = (ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
-		float y = (ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
 
+		// Gets the current point coordinates and checks what should be added to the point vector.
+		current.x = (ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
+		current.y = (ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
 		if (curve_started) {
 
+			// Both points are in the graph area.
+			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
+				vector_push_back(point_vec, rect.x + rect.w*current.x);
+				vector_push_back(point_vec, rect.y + rect.h*current.y);
 
+			// The first point is in the graph area but not the second.
+			} else {
+				Point new_current;
+				move_in_rectangle(prev, current, &new_current);
+				vector_push_back(point_vec, rect.x + rect.w*new_current.x);
+				vector_push_back(point_vec, rect.y + rect.h*new_current.y);
+				curve_started = false;
+			}
 
 		} else {
-			if (x >= x_min && x <= x_max && y >= y_min && y <= y_max) {
-				// POINT 2 DANS LE RECTANGLE, 1 DEHORS.
-			} else 
 
+			// The second point is in the graph area but not the first.
+			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
+				Point new_prev;
+				move_in_rectangle(current, prev, &new_prev);
+				vector_push_back(point_vec, rect.x + rect.w*new_prev.x);
+				vector_push_back(point_vec, rect.y + rect.h*new_prev.y);
+				vector_push_back(point_vec, rect.x + rect.w*current.x);
+				vector_push_back(point_vec, rect.y + rect.h*current.y);
+				curve_started = true;
+				
+			// Both points are out of the graph but they segment intersects the graph area. 
+			} else if (intersect_rectangle(prev, current)) {
+				Point new_current, new_prev;
+				move_in_rectangle(prev, current, &new_current);
+				move_in_rectangle(current, prev, &new_prev);
+				vector_push_back(point_vec, rect.x + rect.w*new_prev.x);
+				vector_push_back(point_vec, rect.y + rect.h*new_prev.y);
+				vector_push_back(point_vec, rect.x + rect.w*new_current.x);
+				vector_push_back(point_vec, rect.y + rect.h*new_current.y);
+			}
 		}
 
-		x_prev = x;
-		y_prev = y;
+		// Next point.
+		prev = current;
 		++i;
 	}
-
-
-
-
-
 
 	// Creates the VAO.
 	void *data = point_vec->data;
@@ -170,19 +187,6 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 	}
 	return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /// @brief Creates a VAO for a curve.
 /// @param x_val x coordinates of the points.
