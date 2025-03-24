@@ -1,6 +1,5 @@
 #include "curve.h"
 
-#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,10 +18,10 @@ Curve *curve_create() {
 	}
 	curve->color = COLOR_BLACK;
 	curve->curve_vao = NULL;
-	curve->x_min = FLT_MAX;
-	curve->x_max = FLT_MIN;
-	curve->y_min = FLT_MAX;
-	curve->y_max = FLT_MIN;
+	curve->x_min = 0.0f;
+	curve->x_max = 1.0f;
+	curve->y_min = 0.0f;
+	curve->y_max = 1.0f;
 	curve->x_val = NULL;
 	curve->y_val = NULL;
 	return curve;
@@ -139,7 +138,7 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 	}
 	const size_t size = curve->x_val->size;
 	if (size <= 1) {
-		fprintf(stderr, "[ARGUS]: warning: the curve does not contain enough data to draw a curve!\n");
+		fprintf(stderr, "[ARGUS]: warning: the curve does not contain enough data to draw anything!\n");
 		return true;
 	}
 
@@ -161,12 +160,12 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 	size_t i = 0;
 	Point prev, current;
 	prev.x = (ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min);
-	prev.y = (ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
+	prev.y = 1.0f-(ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
 	while (i < size) {
 
 		// Gets the current point coordinates and checks what should be added to the point vector.
 		current.x = (ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
-		current.y = (ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
+		current.y = 1.0f-(ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
 		if (curve_started) {
 
 			// Both points are in the graph area.

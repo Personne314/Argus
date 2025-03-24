@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
 	argus_curve_set_size(N);
 	argus_curve_add_x_raw(x, N);
 	argus_curve_add_y_raw(y, N);
+	argus_graph_set_y_limits(-2,2);
 	argus_curve_set_color(COLOR_TEAL);
 	argus_show();
 

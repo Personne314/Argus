@@ -33,8 +33,10 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 	const float y_range = graph->y_axis.max - graph->y_axis.min;
 	float dx = powf(10.0f, floor(log10f(x_range)));
 	float dy = powf(10.0f, floor(log10f(y_range)));
-	while (x_range/dx < 5) dx /= 2;
-	while (y_range/dy < 4) dy /= 2;
+	if (x_range/dx < 5) dx = x_range/5;
+	if (x_range/dx > 8) dx = x_range/8;
+	if (y_range/dy < 4) dy = y_range/4;
+	if (y_range/dy > 6) dy = y_range/6;
 
 	// Calculates the positions of the lines.
 	const int n_x = ceil(x_range/dx);

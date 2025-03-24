@@ -468,6 +468,44 @@ void argus_graph_auto_adapt_y(bool adapt) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the limits of the x axis of the current graph.
+/// @param min The minimal value of the axis.
+/// @param max The maximal value of the axis.
+/// @note This function will deactivate the auto-adapt mode if it's activated.
+void argus_graph_set_x_limits(float min, float max) {
+	CHECK_INIT(init, argus_mutex)
+	if (min >= max) {
+		fprintf(stderr, "[ARGUS]: error: min (%d) > max (%d) ! The axis limits won't change.\n", min, max);
+		return;
+	}
+	if (CURRENT_GRAPH->x_axis.auto_adapt) {
+		fprintf(stderr, "[ARGUS]: warning: x axis was on auto-adapt mode. This will be deactivated.\n", min, max);
+		CURRENT_GRAPH->x_axis.auto_adapt = false;
+	}
+	CURRENT_GRAPH->x_axis.min = min;
+	CURRENT_GRAPH->x_axis.max = max;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the limits of the y axis of the current graph.
+/// @param min The minimal value of the axis.
+/// @param max The maximal value of the axis.
+/// @note This function will deactivate the auto-adapt mode if it's activated.
+void argus_graph_set_y_limits(float min, float max) {
+	CHECK_INIT(init, argus_mutex)
+	if (min >= max) {
+		fprintf(stderr, "[ARGUS]: error: min (%d) > max (%d) ! The axis limits won't change.\n", min, max);
+		return;
+	}
+	if (CURRENT_GRAPH->y_axis.auto_adapt) {
+		fprintf(stderr, "[ARGUS]: warning: y axis was on auto-adapt mode. This will be deactivated.\n", min, max);
+		CURRENT_GRAPH->y_axis.auto_adapt = false;
+	}
+	CURRENT_GRAPH->y_axis.min = min;
+	CURRENT_GRAPH->y_axis.max = max;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
 
 
 

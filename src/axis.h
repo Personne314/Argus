@@ -20,7 +20,7 @@ struct Axis {
 typedef struct Axis Axis;
 
 // Default axis value.
-#define AXIS_INIT (Axis){NULL, NULL, NULL, 0.0f, 0.0f, true}
+#define AXIS_INIT (Axis){NULL, NULL, NULL, 0.0f, 1.0f, true}
 
 
 // Prepares the x axis title.

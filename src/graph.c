@@ -36,10 +36,6 @@ Graph *graph_create(Rect rect) {
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->title = "";
-	graph->x_axis.min = 0;
-	graph->y_axis.min = -1;
-	graph->x_axis.max = 3;
-	graph->y_axis.max = 1;
 
 	// Creates the curves vector.
 	graph->curves = curves_create();

@@ -83,6 +83,11 @@ void argus_graph_auto_adapt_x(bool adapt);
 void argus_graph_auto_adapt_y(bool adapt);
 
 
+
+void argus_graph_set_x_limits(float min, float max);
+void argus_graph_set_y_limits(float min, float max);
+
+
 ////////////////////////////////////////////////////////////////
 //                      Curve functions                       //
 ////////////////////////////////////////////////////////////////
