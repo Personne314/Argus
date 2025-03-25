@@ -4,6 +4,8 @@
 #include <stdlib.h>
 
 
+/// @brief Creates a list of curves.
+/// @return The created list.
 Curves *curves_create() {
 	Curves *curves = malloc(sizeof(Curves));
 	if (!curves) {
@@ -21,6 +23,9 @@ Curves *curves_create() {
 	return curves;
 }
 
+/// @brief Frees the memory allocated for a Curves.
+/// @param p_curves A pointer to the pointer of the Curves to be freed. Cannot be NULL.
+/// @note After freeing, the pointer *p_curves is set to NULL to avoid double-free.
 void curves_free(Curves **p_curves) {
 	Curves *curves = *p_curves;
 	if (!curves) return;
@@ -31,6 +36,9 @@ void curves_free(Curves **p_curves) {
 }
 
 
+/// @brief Adds a new empty curve at the end of the list. 
+/// @param curves The list where to add a curve.
+/// @return false if there was an error.
 bool curves_push_back_curve(Curves *curves) {
 	if (curves->cap == curves->size) {
 		size_t new_cap = 2*curves->cap;
@@ -51,6 +59,10 @@ bool curves_push_back_curve(Curves *curves) {
 	return true;
 }
 
+/// @brief Deletes a curve from the list.
+/// @param curves The list of curves where to delete a curve.
+/// @param id The id of the curve to delete. Must be inferior to curves->size.
+/// @return false if there was an error.
 bool curves_delete_curve(Curves *curves, size_t id) {
 	if (!curves->size) {
 		fprintf(stderr, "[ARGUS]: error: unable to remove an element "
@@ -71,6 +83,9 @@ bool curves_delete_curve(Curves *curves, size_t id) {
 }
 
 
+/// @brief Returns the number of curve stored.
+/// @param curves The list of curves from which to get the size of.
+/// @return The number of curves.
 size_t curves_size(Curves *curves) {
 	return curves->size;
 }
