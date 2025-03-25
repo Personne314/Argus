@@ -8,6 +8,7 @@
 #include "glyphs.h"
 #include "structs.h"
 #include "axis.h"
+#include "button.h"
 
 
 
@@ -26,6 +27,7 @@ typedef struct {
 	VAO *grid_vao;			// VAO for the grid of the graph.
 	VAO *background_vao;	// VAO for the background of the graph.
 	VAO *title_vao;			// VAO for the graph title.
+	ImageButton *save;		// Button used to save the graph as a png.
 	const char *title;		// The graph title.
 	
 } Graph;

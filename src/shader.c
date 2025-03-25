@@ -28,9 +28,6 @@ void main() { \
 	out_color = vec4(frag_color.xyz, w); \
 }";
 
-/// @brief Attrib identifiers for shape shader.
-static const int shape_attr_ids[] = {0,1};
-
 /// @brief Attrib names for shape shader.
 static const char *shape_attr_names[] = {"in_coord","in_color"};
 
@@ -58,9 +55,6 @@ void main() { \
 	out_color = vec4(color, 1.0)*texture(tex, tex_coord); \
 }";
 
-/// @brief Attrib identifiers for text shader.
-static const int text_attr_ids[] = {0,1};
-
 /// @brief Attrib names for text shader.
 static const char *text_attr_names[] = {"in_coord","in_tex_coord"};
 
@@ -83,11 +77,34 @@ void main() { \
 	out_color = vec4(frag_color, 1); \
 }";
 
-/// @brief Attrib identifiers for curve shader.
-static const int curve_attr_ids[] = {0};
-
 /// @brief Attrib names for curve shader.
 static const char *curve_attr_names[] = {"in_coord"};
+
+
+// Texture shader data.
+/// @brief Texture vertex shader source. 
+static const char source_texture_shader_vert[] = 
+"#version 450 core\n \
+in vec2 in_coord; \
+in vec2 in_tex_coord; \
+out vec2 tex_coord; \
+void main() { \
+	gl_Position = vec4(-1+2*in_coord.x, 1-2*in_coord.y, 0.0, 1.0); \
+	tex_coord = in_tex_coord; \
+}";
+
+/// @brief Texture fragment shader source.
+static const char source_texture_shader_frag[] = 
+"#version 450 core\n \
+in vec2 tex_coord; \
+out vec4 out_color; \
+uniform sampler2D tex; \
+void main() { \
+	out_color = texture(tex, tex_coord); \
+}";
+
+/// @brief Attrib names for texture shader.
+static const char *texture_attr_names[] = {"in_coord", "in_tex_coord"};
 
 
 // Shader infos.
@@ -96,7 +113,6 @@ struct ShaderInfo {
     const char *name;	///< The shader name, used for error display. 
     const char *vert;	///< The vertex shader sources.
     const char *frag;	///< The fragment shader sources.
-	const int *attr_ids;		///< The attrib array ids.
 	const char **attr_names;	///< The attrib names in the sources.
 	const int n;				///< The number of attrib lists.
 };
@@ -105,16 +121,16 @@ typedef struct ShaderInfo ShaderInfo;
 /// @brief Shader description array.
 static const ShaderInfo shader_infos[] = {
     [SHADER_SHAPE] = {
-		"shape", source_shape_shader_vert, source_shape_shader_frag,
-		shape_attr_ids, shape_attr_names, 2
+		"shape", source_shape_shader_vert, source_shape_shader_frag, shape_attr_names, 2
 	},
 	[SHADER_TEXT] = {
-		"text", source_text_shader_vert, source_text_shader_frag,
-		text_attr_ids, text_attr_names, 2
+		"text", source_text_shader_vert, source_text_shader_frag, text_attr_names, 2
 	},
 	[SHADER_CURVE] = {
-		"text", source_curve_shader_vert, source_curve_shader_frag,
-		curve_attr_ids, curve_attr_names, 1
+		"curve", source_curve_shader_vert, source_curve_shader_frag, curve_attr_names, 1
+	},
+	[SHADER_TEXTURE] = {
+		"texture", source_texture_shader_vert, source_texture_shader_frag, texture_attr_names, 2
 	}
 };
 
@@ -130,7 +146,7 @@ Shader *shaders[SHADERNAME_SIZE];
 /// @param frag A variable to store a const pointer ot the fragment shader source.
 /// @return false if the name don't describe a known shader.
 bool shader_get_sources(const ShaderName shader, const char **name, const char **vert,
-const char **frag, const int **attr_ids, const char ***attr_names, int *n) {
+const char **frag, const char ***attr_names, int *n) {
     if (shader < 0 || shader >= SHADERNAME_SIZE) {
 		fprintf(stderr, 
 			"[ARGUS]: error: '%d' doesn't correspond to a valid ShaderName value ! "
@@ -140,7 +156,6 @@ const char **frag, const int **attr_ids, const char ***attr_names, int *n) {
     *name = shader_infos[shader].name;
     *vert = shader_infos[shader].vert;
     *frag = shader_infos[shader].frag;
-	*attr_ids = shader_infos[shader].attr_ids;
 	*attr_names = shader_infos[shader].attr_names;
 	*n = shader_infos[shader].n;
     return true;
@@ -206,7 +221,7 @@ SHADER_CREATION_ERROR:
 /// @param n Number of elements in the attrib lists.
 /// @return The created shader.
 Shader *shader_create(const char *vert, const char *frag, const char *name, 
-const int *attr_ids, const char *attr_names[], const int n) {
+const char *attr_names[], const int n) {
 
 	// Malloc for the shader structure.
 	Shader *shader = malloc(sizeof(Shader));
@@ -239,7 +254,7 @@ const int *attr_ids, const char *attr_names[], const int n) {
 	// Attribes the lists and links the program.
 	GLint state = 0;
 	for (int i = 0; i < n; ++i) {
-		glBindAttribLocation(shader->prog_id, attr_ids[i], attr_names[i]);
+		glBindAttribLocation(shader->prog_id, i, attr_names[i]);
 	}
 	glLinkProgram(shader->prog_id);
 	glGetProgramiv(shader->prog_id, GL_LINK_STATUS, &state);

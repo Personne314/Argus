@@ -10,6 +10,7 @@ typedef enum {
 	SHADER_SHAPE,
 	SHADER_TEXT,
 	SHADER_CURVE,
+	SHADER_TEXTURE,
 	SHADERNAME_SIZE
 } ShaderName;
 
@@ -26,11 +27,11 @@ extern Shader *shaders[SHADERNAME_SIZE];
 
 // Returns the sources of a shader.
 bool shader_get_sources(const ShaderName shader, const char **name, const char **vert, 
-	const char **frag, const int **attr_ids, const char ***attr_names, int *n);
+	const char **frag, const char ***attr_names, int *n);
 
 // Creates a shader from source codes.
 Shader *shader_create(const char *vert, const char *frag, const char *name, 
-	const int *attr_ids, const char *attr_names[], const int n);
+	const char *attr_names[], const int n);
 
 // Frees the memory allocated for a Shader.
 void shader_free(Shader **p_shader);

@@ -63,7 +63,7 @@ int id_from_char(int c) {
 Glyphs *glyphs_create(int size) {
 
 	// Loads the font from memory.
-	SDL_RWops *rw = SDL_RWFromMem(UbuntuMono_ttf, UbuntuMono_len);
+	SDL_RWops *rw = SDL_RWFromMem((void*)UbuntuMono_ttf, UbuntuMono_len);
 	if (!rw) {
         fprintf(stderr, "[ARGUS] error: failed to create RWops: %s\n", SDL_GetError());
 		return NULL;

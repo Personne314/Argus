@@ -475,11 +475,11 @@ void argus_graph_auto_adapt_y(bool adapt) {
 void argus_graph_set_x_limits(float min, float max) {
 	CHECK_INIT(init, argus_mutex)
 	if (min >= max) {
-		fprintf(stderr, "[ARGUS]: error: min (%d) > max (%d) ! The axis limits won't change.\n", min, max);
+		fprintf(stderr, "[ARGUS]: error: min (%f) > max (%f) ! The axis limits won't change.\n", min, max);
 		return;
 	}
 	if (CURRENT_GRAPH->x_axis.auto_adapt) {
-		fprintf(stderr, "[ARGUS]: warning: x axis was on auto-adapt mode. This will be deactivated.\n", min, max);
+		fprintf(stderr, "[ARGUS]: warning: x axis was on auto-adapt mode. This will be deactivated.\n");
 		CURRENT_GRAPH->x_axis.auto_adapt = false;
 	}
 	CURRENT_GRAPH->x_axis.min = min;
@@ -494,11 +494,11 @@ void argus_graph_set_x_limits(float min, float max) {
 void argus_graph_set_y_limits(float min, float max) {
 	CHECK_INIT(init, argus_mutex)
 	if (min >= max) {
-		fprintf(stderr, "[ARGUS]: error: min (%d) > max (%d) ! The axis limits won't change.\n", min, max);
+		fprintf(stderr, "[ARGUS]: error: min (%f) > max (%f) ! The axis limits won't change.\n", min, max);
 		return;
 	}
 	if (CURRENT_GRAPH->y_axis.auto_adapt) {
-		fprintf(stderr, "[ARGUS]: warning: y axis was on auto-adapt mode. This will be deactivated.\n", min, max);
+		fprintf(stderr, "[ARGUS]: warning: y axis was on auto-adapt mode. This will be deactivated.\n");
 		CURRENT_GRAPH->y_axis.auto_adapt = false;
 	}
 	CURRENT_GRAPH->y_axis.min = min;
@@ -649,17 +649,16 @@ void argus_show() {
 
 
 
-	
+
 	// Initializes the shaders.
 	const char *name;
 	const char *vert_source;
 	const char *frag_source;
-	const int *attr_ids;
 	const char **attr_names;
 	int n;
 	for (int i = 0; i < SHADERNAME_SIZE; ++i) {
-		shader_get_sources((ShaderName)i, &name, &vert_source, &frag_source, &attr_ids, &attr_names, &n);
-		shaders[i] = shader_create(vert_source, frag_source, name, attr_ids, attr_names, n);
+		shader_get_sources((ShaderName)i, &name, &vert_source, &frag_source, &attr_names, &n);
+		shaders[i] = shader_create(vert_source, frag_source, name, attr_names, n);
 		if (!shaders[i]) {
 			fprintf(stderr, "[ARGUS]: error: failed to initializes the shaders !\n");
 			goto ARGUS_ERROR_SHADERS_CREATION;

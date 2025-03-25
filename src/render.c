@@ -50,3 +50,19 @@ void render_curve(VAO *vao, Color color, bool continuous) {
 		vao_bind(NULL);
 	shader_use(NULL);
 }
+
+
+/// @brief Renders a texture from a VAO.
+/// @param vao VAO of the texture to render.
+/// @param texture The texture to use.
+void render_texture(VAO *vao, Texture *texture) {
+	printf("%p\n", texture);
+	if (!vao) return;
+	shader_use(shaders[SHADER_TEXTURE]);
+		vao_bind(vao);
+			texture_bind(texture);
+			glDrawArrays(GL_TRIANGLES, 0, vao->size);
+			texture_bind(NULL);
+		vao_bind(NULL);
+	shader_use(NULL);
+}

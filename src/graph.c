@@ -8,6 +8,7 @@
 #include "structs.h"
 #include "render.h"
 #include "grid.h"
+#include "icons.h"
 
 
 
@@ -44,6 +45,9 @@ Graph *graph_create(Rect rect) {
 		free(graph);
 		return NULL;
 	}
+
+	// Creates the save button.
+	graph->save = imagebutton_create(save_icon, save_ico_size, NULL,NULL);
 	return graph;
 }
 
@@ -59,6 +63,7 @@ void graph_free(Graph **p_graph) {
 	vao_free(&graph->grid_vao);
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
+	imagebutton_free(&graph->save);
 	free(graph);
 	*p_graph = NULL;
 }
@@ -136,6 +141,13 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	}
 	if (!axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height)) {
 		fprintf(stderr, "[ARGUS]: error: unable to prepare the y axis title of a graph !\n");
+		return false;
+	}
+
+	// Prepares the save button VAO.
+	Rect save_rect = {graph->rect.x, graph->rect.y+graph->rect.h-6*dy, 6*dx, 6*dy};
+	if (!imagebutton_prepare_static(graph->save, &save_rect)) {
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the save button VAO of a graph !\n");
 		return false;
 	}
 
@@ -253,4 +265,5 @@ void graph_render(Graph *graph, Glyphs *glyphs) {
 		render_curve(curve->curve_vao, curve->color, true);
 	}
 	render_curve(graph->grid_vao, graph->text_color, false);
+	imagebutton_render(graph->save);
 }
