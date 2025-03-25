@@ -278,7 +278,7 @@ SHADER_MALLOC_FAILURE:
 }
 
 /// @brief Frees the memory allocated for a Shader.
-/// @param vao A pointer to the pointer of the Shader to be freed. Cannot be NULL.
+/// @param p_shader A pointer to the pointer of the Shader to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_shader is set to NULL to avoid double-free.
 void shader_free(Shader **p_shader) {
 	Shader *shader = *p_shader;

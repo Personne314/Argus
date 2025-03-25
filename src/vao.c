@@ -63,7 +63,7 @@ VAO *vao_create(void** data, int* sizes, int* gl_types, size_t buffer_len, int n
 }
 
 /// @brief Frees the memory allocated for a VAO.
-/// @param vao A pointer to the pointer of the VAO to be freed. Cannot be NULL.
+/// @param p_vao A pointer to the pointer of the VAO to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_vao is set to NULL to avoid double-free.
 void vao_free(VAO **p_vao) {
 	VAO *vao = *p_vao;

@@ -631,7 +631,7 @@ void argus_show() {
 	glDepthFunc(GL_ALWAYS);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	SDL_GL_SetSwapInterval(0);
 
 	// GLEW initialization.
@@ -640,6 +640,16 @@ void argus_show() {
 		goto ARGUS_ERROR_CONTEXT_CREATION;
 	}
 
+
+
+
+
+
+
+
+
+
+	
 	// Initializes the shaders.
 	const char *name;
 	const char *vert_source;

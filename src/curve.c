@@ -28,7 +28,7 @@ Curve *curve_create() {
 }
 
 /// @brief Frees the memory allocated for a Curve.
-/// @param vao A pointer to the pointer of the Curve to be freed. Cannot be NULL.
+/// @param p_curve A pointer to the pointer of the Curve to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_curve is set to NULL to avoid double-free.
 void curve_free(Curve **p_curve) {
 	Curve *curve = *p_curve;

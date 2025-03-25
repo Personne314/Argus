@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
 	argus_graph_set_x_title("Amplitude (mV)");
 	argus_graph_set_y_title("Temps (ms)");
 
-	
 	float x[N];
 	float y[N];
 	for (int i = 0; i < N; ++i) {

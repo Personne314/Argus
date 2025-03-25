@@ -48,7 +48,7 @@ Graph *graph_create(Rect rect) {
 }
 
 /// @brief Frees the memory allocated for a Graph.
-/// @param vao A pointer to the pointer of the Graph to be freed. Cannot be NULL.
+/// @param p_graph A pointer to the pointer of the Graph to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_graph is set to NULL to avoid double-free.
 void graph_free(Graph **p_graph) {
 	Graph *graph = *p_graph;

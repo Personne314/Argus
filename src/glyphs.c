@@ -154,7 +154,7 @@ Glyphs *glyphs_create(int size) {
 }
 
 /// @brief Frees the memory allocated for a Glyphs.
-/// @param vao A pointer to the pointer of the Glyphs to be freed. Cannot be NULL.
+/// @param p_glyphs A pointer to the pointer of the Glyphs to be freed. Cannot be NULL.
 /// @note After freeing, the pointer *p_glyphs is set to NULL to avoid double-free.
 void glyphs_free(Glyphs **p_glyphs) {
 	Glyphs *glyphs = *p_glyphs;
