@@ -28,15 +28,14 @@ void button_update(Button *button, float x, float y, bool clicked);
 
 
 // Creates an ImageButton with a callback function.
-ImageButton *imagebutton_create(const unsigned char *image, size_t size, 
-	void (*callback)(void*), void *args);
+ImageButton *imagebutton_create(void (*callback)(void*), void *args);
 
 // Frees the memory allocated for a ImageButton.
 void imagebutton_free(ImageButton **p_button);
 
 
 // Prepares the VAO of the button.
-bool imagebutton_prepare_static(ImageButton *button, Rect *rect);
+bool imagebutton_prepare_static(ImageButton *button, Rect *rect, const unsigned char *image, size_t size);
 
 
 // Update function of an ImageButton. Calls the callback function if the button is clicked.

@@ -594,7 +594,8 @@ void argus_curve_add_y_raw(float *data, size_t n) {
 
 
 
-
+#include "texture.h"
+#include "icons.h"
 ////////////////////////////////////////////////////////////////
 //                    Rendering function                      //
 ////////////////////////////////////////////////////////////////
@@ -639,16 +640,6 @@ void argus_show() {
 		fprintf(stderr, "[ARGUS]: error: Failed to initialize GLEW.\n");
 		goto ARGUS_ERROR_CONTEXT_CREATION;
 	}
-
-
-
-
-
-
-
-
-
-
 
 	// Initializes the shaders.
 	const char *name;

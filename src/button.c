@@ -26,51 +26,19 @@ void button_update(Button *button, float x, float y, bool clicked) {
 /// @param args The arguments of the callback function. This will be free by imagebutton_free.
 /// @return The created button.
 /// @note In case of an error, args won't be free. 
-ImageButton *imagebutton_create(const unsigned char *image, size_t size, 
-void (*callback)(void*), void *args) {
+ImageButton *imagebutton_create(void (*callback)(void*), void *args) {
 
 	// Malloc the button.
 	ImageButton *button = malloc(sizeof(ImageButton));
 	if (!button) {
-		fprintf(stderr, "[ARGUS]: error: unable to malloc a ImageButton\n");
+		fprintf(stderr, "[ARGUS]: error: unable to malloc an ImageButton!\n");
 		return NULL;
 	}
 	button->button.callback = callback;
 	button->button.args = args;
 	button->button.rect = (Rect){0,0,0,0};
 	button->image_vao = NULL;
-
-	// Creates an RWops for IMG_Load_RW.
-	SDL_RWops *rw = SDL_RWFromMem((void*)image, size);
-	if (!rw) {
-		fprintf(stderr, "[ARGUS]: error: unable to create an RWops during "
-			"ImageButton creation: %s\n", SDL_GetError());
-		free(button);
-		return NULL;
-	}
-
-	// Creates the image surface.
-	SDL_Surface *surface = IMG_Load_RW(rw, 1);
-	if (!surface) {
-		fprintf(stderr, "[ARGUS]: error: unable to create the image surface "
-			"during ImageButton creation: %s\n", SDL_GetError());
-		vao_free(&button->image_vao);
-		free(button);
-		return NULL;
-	}
-
-	surface = IMG_Load("./save.png");
-
-	// Loads the Texture.
-	button->image = create_texture("./save.png");
-	texture_save(button->image, "DUMP.PNG");
-	if (!button->image) {
-		fprintf(stderr, "[ARGUS]: error: unable to load the image of an ImageButton\n");
-		vao_free(&button->image_vao);
-		free(button);
-		return NULL;
-	}
-	printf(":%p\n", button->image);
+	button->image = NULL;
 	return button;
 }
 
@@ -92,22 +60,32 @@ void imagebutton_free(ImageButton **p_button) {
 /// @brief Prepares the VAO of the button.
 /// @param button The button to prepare.
 /// @param rect The rect of the button.
-bool imagebutton_prepare_static(ImageButton *button, Rect *rect) {
+bool imagebutton_prepare_static(ImageButton *button, Rect *rect, const unsigned char *image, size_t size) {
 	if (button->image_vao) vao_free(&button->image_vao);
-	button->image_vao = NULL;
+	if (button->image) texture_free(&button->image);
+
+	// Loads the texture of the button.
+	button->image = texture_create(image, size);
+	if (!button->image) {
+		fprintf(stderr, "[ARGUS]: error: unable to create an ImageButton texture!\n");
+		return false;
+	}
+
+	// Creates the rect of the button.
 	button->button.rect = *rect;
 	float vertices[12] = {
 		rect->x,rect->y,rect->x+rect->w,rect->y+rect->h,rect->x,rect->y+rect->h,
 		rect->x,rect->y,rect->x+rect->w,rect->y,rect->x+rect->w,rect->y+rect->h
 	};
-	float textures[12] = {0,1,1,0,0,0,0,1,1,1,1,0};
+
+	// Creates the button VAO.
+	float textures[12] = {0,0,1,1,0,1,0,0,1,0,1,1};
 	void *data[2] = {vertices, textures};
 	int sizes[2] = {2,2};
 	int gl_types[2] = {GL_FLOAT, GL_FLOAT};
 	button->image_vao = vao_create(data, sizes, gl_types, 6,2);
 	if (!button->image_vao) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the VAO of an ImageButton\n");
-		free(button);
 		return false;
 	}
 	return true;

@@ -20,7 +20,7 @@ Graph *graph_create(Rect rect) {
 	// Malloc the graph.
 	Graph *graph = malloc(sizeof(Graph));
 	if (!graph) {
-		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph\n");
+		fprintf(stderr, "[ARGUS]: error: unable to malloc a Graph!\n");
 		return NULL;
 	}
 
@@ -41,13 +41,19 @@ Graph *graph_create(Rect rect) {
 	// Creates the curves vector.
 	graph->curves = curves_create();
 	if (!graph->curves) {
-		fprintf(stderr, "[ARGUS]: error: unable to creates the curves of a Graph\n");
+		fprintf(stderr, "[ARGUS]: error: unable to create the curves of a Graph!\n");
 		free(graph);
 		return NULL;
 	}
 
 	// Creates the save button.
-	graph->save = imagebutton_create(save_icon, save_ico_size, NULL,NULL);
+	graph->save = imagebutton_create(NULL,NULL);
+	if (!graph->save) {
+		fprintf(stderr, "[ARGUS]: error: unable to create the save button of a Graph!\n");
+		curves_free(&graph->curves);
+		free(graph);
+		return NULL;
+	}
 	return graph;
 }
 
@@ -102,12 +108,12 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		float *textures;
 		if (!glyphs_generate_text_buffers(glyphs, &title_rect, graph->title, 
 			(float)window_width/window_height, &vertices, &textures, &n)) {
-			fprintf(stderr, "[ARGUS]: error: unable to create buffer to store the data of the title of a graph !\n");
+			fprintf(stderr, "[ARGUS]: error: unable to create buffer to store the data of the title of a graph!\n");
 			return false;
 		}
 		graph->title_vao = glyphs_generate_text_vao(vertices, textures, n);
 		if (!graph->title_vao) {
-			fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the title of a graph !\n");
+			fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the title of a graph!\n");
 			return false;
 		}
 	}
@@ -136,18 +142,18 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 
 	// Prepares the axis VAOs.
 	if (!axis_prepare_x_title(&graph->x_axis, glyphs, &x_axis_rect, window_width, window_height)) {
-		fprintf(stderr, "[ARGUS]: error: unable to prepare the x axis title of a graph !\n");
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the x axis title of a graph!\n");
 		return false;
 	}
 	if (!axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height)) {
-		fprintf(stderr, "[ARGUS]: error: unable to prepare the y axis title of a graph !\n");
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the y axis title of a graph!\n");
 		return false;
 	}
 
 	// Prepares the save button VAO.
-	Rect save_rect = {graph->rect.x, graph->rect.y+graph->rect.h-6*dy, 6*dx, 6*dy};
-	if (!imagebutton_prepare_static(graph->save, &save_rect)) {
-		fprintf(stderr, "[ARGUS]: error: unable to prepare the save button VAO of a graph !\n");
+	Rect save_rect = {graph->rect.x+dx, graph->rect.y+graph->rect.h-6*dy, 5*dx, 5*dy};
+	if (!imagebutton_prepare_static(graph->save, &save_rect, save_icon, save_icon_size)) {
+		fprintf(stderr, "[ARGUS]: error: unable to prepare the save button VAO of a graph!\n");
 		return false;
 	}
 
@@ -188,7 +194,7 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	int gl_types[2] = {GL_FLOAT,GL_FLOAT};
 	graph->background_vao = vao_create(data, sizes, gl_types, 12,2);
 	if (!graph->background_vao) {
-		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph !\n");
+		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph!\n");
 		return false;
 	}
 	return true;
@@ -225,19 +231,18 @@ bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int w
 
 	// Prepares the grid VAO.
 	if (!grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
-		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph !\n");
+		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph!\n");
 		return false;
 	}
 
 	// Prepares the curves VAOs.
 	for (size_t i = 0; i < curves_size(graph->curves); ++i) {
 		if (!curve_prepare_dynamic(graph->curves->data[i], &graph->x_axis, &graph->y_axis, graph->grid_rect)) {
-			fprintf(stderr, "[ARGUS]: error: unable to create the vao of a curve !\n");
+			fprintf(stderr, "[ARGUS]: error: unable to create the vao of a curve!\n");
 			return false;
 		}
 	}
 	return true;
-
 }
 
 /// @brief Frees the graphics components a the end of the render.
