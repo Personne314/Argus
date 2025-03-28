@@ -14,7 +14,7 @@
 void button_update(Button *button, float x, float y, bool clicked) {
 	if (!clicked) return;
 	Rect rect = button->rect;
-	if (x >= rect.x && x <= rect.x+rect.w && y >= rect.y && y >= rect.y+rect.h) {
+	if (x >= rect.x && x <= rect.x+rect.w && y >= rect.y && y >= rect.y+rect.h && button->callback) {
 		button->callback(button->args);
 	}
 }

@@ -14,6 +14,8 @@
 #include "glyphs.h"
 #include "curves.h"
 #include "curve.h"
+#include "screenshot.h"
+#include "button.h"
 
 
 #define OFFSET_SIZE 10
@@ -641,6 +643,12 @@ void argus_show() {
 		goto ARGUS_ERROR_CONTEXT_CREATION;
 	}
 
+	// Initializes the FBO for the screenshots.
+	if (!screenshot_fbo_create(1000,500)) {
+		fprintf(stderr, "[ARGUS]: error: failed to initialize screenshot FBO!\n");
+		goto ARGUS_ERROR_SCREENSHOT_INIT;
+	}
+
 	// Initializes the shaders.
 	const char *name;
 	const char *vert_source;
@@ -677,6 +685,7 @@ void argus_show() {
 
 	// Window main loop.
 	bool run = true;
+	int x = 0, y = 0;
 	uint32_t last_loop = 0;
 	double updates_to_do = 0.0;
 	while (run) {
@@ -694,6 +703,16 @@ void argus_show() {
 			switch (event.type) {
 			case SDL_QUIT: 
 				run = false; 
+				break;
+			case SDL_MOUSEBUTTONUP:
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					SDL_GetMouseState(&x,&y);
+					const float xf = (float)x/width;
+					const float yf = (float)y/height;
+					for (size_t i = 0; i < (size_t)lines*columns; ++i) {
+						imagebutton_update(grid[i]->save, xf,yf, true);	
+					}
+				}
 				break;
 			}
 		}
@@ -730,6 +749,8 @@ ARGUS_ERROR_GRAPHS_PREPARATION:
 ARGUS_ERROR_GLYPHS_CREATION:
 ARGUS_ERROR_SHADERS_CREATION:
 	for (int i = 0; i < SHADERNAME_SIZE; ++i) shader_free(shaders+i);
+	screenshot_fbo_free();
+ARGUS_ERROR_SCREENSHOT_INIT:
 	SDL_GL_DeleteContext(context);
 	context = NULL;
 ARGUS_ERROR_CONTEXT_CREATION:

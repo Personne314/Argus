@@ -9,6 +9,22 @@
 #include "render.h"
 #include "grid.h"
 #include "icons.h"
+#include "screenshot.h"
+
+
+
+
+
+void save_screnshot(void *args) {
+	Graph *graph = *(Graph**)args;
+	Glyphs *glyphs = *(Glyphs**)(args+sizeof(Graph*));
+	const char *title = graph->title;
+	if (!title || !strlen(title)) title = "graph.png";
+
+	printf("saving %s\n", title);
+	screenshot_graph(graph, glyphs, title);
+}
+
 
 
 
@@ -36,21 +52,13 @@ Graph *graph_create(Rect rect) {
 	graph->background_vao = NULL;
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
+	graph->save = NULL;
 	graph->title = "";
 
 	// Creates the curves vector.
 	graph->curves = curves_create();
 	if (!graph->curves) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the curves of a Graph!\n");
-		free(graph);
-		return NULL;
-	}
-
-	// Creates the save button.
-	graph->save = imagebutton_create(NULL,NULL);
-	if (!graph->save) {
-		fprintf(stderr, "[ARGUS]: error: unable to create the save button of a Graph!\n");
-		curves_free(&graph->curves);
 		free(graph);
 		return NULL;
 	}
@@ -147,6 +155,22 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	}
 	if (!axis_prepare_y_title(&graph->y_axis, glyphs, &y_axis_rect, window_width, window_height)) {
 		fprintf(stderr, "[ARGUS]: error: unable to prepare the y axis title of a graph!\n");
+		return false;
+	}
+
+	// Creates the save button.
+	imagebutton_free(&graph->save);
+	void **args = malloc(sizeof(Graph*)+sizeof(Glyphs*));
+	if (!args) {
+		fprintf(stderr, "[ARGUS]: error: unable to malloc the arguments buffer of the save button of a Graph!\n");
+		return false;
+	}
+	args[0] = graph;
+	args[1] = glyphs;
+	graph->save = imagebutton_create(save_screnshot, args);
+	if (!graph->save) {
+		fprintf(stderr, "[ARGUS]: error: unable to create the save button of a Graph!\n");
+		free(args);
 		return false;
 	}
 
