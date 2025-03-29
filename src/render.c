@@ -51,14 +51,14 @@ void render_curve(VAO *vao, Color color, bool continuous) {
 	shader_use(NULL);
 }
 
-
 /// @brief Renders a texture from a VAO.
 /// @param vao VAO of the texture to render.
 /// @param texture The texture to use.
-void render_texture(VAO *vao, Texture *texture) {
+void render_texture(VAO *vao, Texture *texture, float fade) {
 	if (!vao) return;
 	shader_use(shaders[SHADER_TEXTURE]);
 		vao_bind(vao);
+			glUniform1f(shader_uniform_location(shaders[SHADER_TEXTURE], "fade"), fade);
 			texture_bind(texture);
 			glDrawArrays(GL_TRIANGLES, 0, vao->size);
 			texture_bind(NULL);

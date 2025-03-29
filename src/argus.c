@@ -18,8 +18,6 @@
 #include "button.h"
 
 
-#define OFFSET_SIZE 10
-
 
 ////////////////////////////////////////////////////////////////
 //                     Library components                     //
@@ -146,8 +144,8 @@ void argus_init() {
 	// Malloc the initial grid.
 	lines = 1;
 	columns = 1;
-	offset_width = (float)OFFSET_SIZE/width;
-	offset_height = (float)OFFSET_SIZE/height;
+	offset_width = 10.0f/width;
+	offset_height = 10.0f/height;
 	current_line = 0;
 	current_column = 0;
 	grid = calloc(1,sizeof(Graph*));
@@ -258,8 +256,8 @@ void argus_set_grid_size(int w, int h) {
 	// Malloc the new grid.
 	lines = h;
 	columns = w;
-	offset_width = (float)OFFSET_SIZE/width;
-	offset_height = (float)OFFSET_SIZE/height;
+	offset_width = 10.0f/width;
+	offset_height = 10.0f/height;
 	current_line = 0;
 	current_column = 0;
 	grid = calloc(lines*columns, sizeof(Graph));
@@ -329,6 +327,20 @@ void argus_set_update_function(void (*func)(void*, double), void *args) {
 	update_func = func;
 	update_args = args;
 	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Defines the current screenshot save path.
+/// @param path The location where to save the screenshot.
+void argus_set_screenshot_path(const char * path) {
+	screenshot_set_path(path);
+}
+
+/// @brief Defines the current screenshot size.
+/// @param width The width of the screenshot.
+/// @param height The height of the screenshot.
+/// @note width and height must be greater than 0.
+void argus_set_screenshot_size(size_t width, size_t height) {
+	screenshot_set_size(width, height);
 }
 
 
@@ -699,22 +711,25 @@ void argus_show() {
 
 		// Catch the windows events.
 		SDL_Event event;
+		bool left_released = false;
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT: 
 				run = false; 
 				break;
 			case SDL_MOUSEBUTTONUP:
-				if (event.button.button == SDL_BUTTON_LEFT) {
-					SDL_GetMouseState(&x,&y);
-					const float xf = (float)x/width;
-					const float yf = (float)y/height;
-					for (size_t i = 0; i < (size_t)lines*columns; ++i) {
-						imagebutton_update(grid[i]->save, xf,yf, true);	
-					}
-				}
+				left_released = event.button.button == SDL_BUTTON_LEFT;
 				break;
 			}
+		}
+
+		// Updates the save buttons.
+		bool updated = false;
+		SDL_GetMouseState(&x,&y);
+		const float xf = (float)x/width;
+		const float yf = (float)y/height;
+		for (size_t i = 0; i < (size_t)lines*columns; ++i) {
+			updated |= imagebutton_update(grid[i]->save, xf,yf, left_released);	
 		}
 
 		// If there is an update function, calculates the amount of  
@@ -725,8 +740,11 @@ void argus_show() {
 			for (int i = 0; i < loops_to_do; ++i) {
 				update_func(update_args, dt);
 			}
+			updated = true;			
+		}
 
-			// Renders the window to update the shown data.
+		// Renders the window to update the shown data.
+		if (updated) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			for (int i = 0; i < lines*columns; ++i) {
 				if (!graph_prepare_dynamic(grid[i], glyphs, width, height)) {

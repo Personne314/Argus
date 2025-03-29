@@ -35,6 +35,12 @@ void argus_set_current_graph(int x, int y);
 // Defines the update function of the graph data.
 void argus_set_update_function(void (*func)(void*, double), void *args);
 
+// Defines the current screenshot save path.
+void argus_set_screenshot_path(const char * path);
+
+// Defines the current screenshot size.
+void argus_set_screenshot_size(size_t width, size_t height);
+
 
 ////////////////////////////////////////////////////////////////
 //                     Graph functions                        //
@@ -82,9 +88,10 @@ void argus_graph_auto_adapt_x(bool adapt);
 // Sets the auto-adapt parameter for y axis.
 void argus_graph_auto_adapt_y(bool adapt);
 
-
-
+// Sets the limits of the x axis of the current graph.
 void argus_graph_set_x_limits(float min, float max);
+
+// Sets the limits of the y axis of the current graph.
 void argus_graph_set_y_limits(float min, float max);
 
 

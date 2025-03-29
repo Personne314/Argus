@@ -20,11 +20,12 @@ typedef struct {
 	Button button;	//< The button of the image.
 	VAO *image_vao;	//< The VAO of the image.
 	Texture *image;	//< The image to render.
+	bool inside;	//< true if the cursor is inside the button.
 } ImageButton;
 
 
 // Update function of a button. Calls the callback function if the button is clicked.
-void button_update(Button *button, float x, float y, bool clicked);
+bool button_update(Button *button, float x, float y, bool clicked);
 
 
 // Creates an ImageButton with a callback function.
@@ -39,7 +40,7 @@ bool imagebutton_prepare_static(ImageButton *button, Rect *rect, const unsigned 
 
 
 // Update function of an ImageButton. Calls the callback function if the button is clicked.
-void imagebutton_update(ImageButton *button, float x, float y, bool clicked);
+bool imagebutton_update(ImageButton *button, float x, float y, bool clicked);
 
 // Renders an ImageButton.
 void imagebutton_render(ImageButton *button);

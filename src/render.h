@@ -18,4 +18,4 @@ void render_shape(VAO *vao, float transparency);
 void render_curve(VAO *vao, Color color, bool continuous);
 
 // Renders a texture from a VAO.
-void render_texture(VAO *vao, Texture *texture);
+void render_texture(VAO *vao, Texture *texture, float fade);

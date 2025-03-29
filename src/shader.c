@@ -98,9 +98,11 @@ static const char source_texture_shader_frag[] =
 "#version 450 core\n \
 in vec2 tex_coord; \
 out vec4 out_color; \
+uniform float fade; \
 uniform sampler2D tex; \
 void main() { \
-	out_color = texture(tex, tex_coord); \
+	vec4 color = texture(tex, tex_coord); \
+	out_color = vec4(fade*color.xyz, color.w); \
 }";
 
 /// @brief Attrib names for texture shader.

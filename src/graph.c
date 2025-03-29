@@ -13,18 +13,15 @@
 
 
 
-
-
+/// @brief The save button action. Save a screen of a graph.
+/// @param args The graph to screen and the glyphs used to render it.
 void save_screnshot(void *args) {
 	Graph *graph = *(Graph**)args;
 	Glyphs *glyphs = *(Glyphs**)(args+sizeof(Graph*));
 	const char *title = graph->title;
-	if (!title || !strlen(title)) title = "graph.png";
-
-	printf("saving %s\n", title);
+	if (!title || !strlen(title)) title = "graph";
 	screenshot_graph(graph, glyphs, title);
 }
-
 
 
 

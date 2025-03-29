@@ -11,12 +11,12 @@
 /// @param x The x coordinate of the mouse cursor.
 /// @param y The y coordinate of the mouse cursor.
 /// @param clicked true if the left click was used.
-void button_update(Button *button, float x, float y, bool clicked) {
-	if (!clicked) return;
+/// @return true if the cursor is in the button.
+bool button_update(Button *button, float x, float y, bool clicked) {
 	Rect rect = button->rect;
-	if (x >= rect.x && x <= rect.x+rect.w && y >= rect.y && y >= rect.y+rect.h && button->callback) {
-		button->callback(button->args);
-	}
+	bool inside = (x >= rect.x && x <= rect.x+rect.w && y >= rect.y && y <= rect.y+rect.h);
+	if (inside && clicked && button->callback) button->callback(button->args);
+	return inside;
 }
 
 
@@ -39,9 +39,9 @@ ImageButton *imagebutton_create(void (*callback)(void*), void *args) {
 	button->button.rect = (Rect){0,0,0,0};
 	button->image_vao = NULL;
 	button->image = NULL;
+	button->inside = false;
 	return button;
 }
-
 
 /// @brief Frees the memory allocated for a ImageButton.
 /// @param p_button A pointer to the pointer of the ImageButton to be freed. Cannot be NULL.
@@ -97,13 +97,16 @@ bool imagebutton_prepare_static(ImageButton *button, Rect *rect, const unsigned 
 /// @param x The x coordinate of the mouse cursor.
 /// @param y The y coordinate of the mouse cursor.
 /// @param clicked true if the left click was used.
-void imagebutton_update(ImageButton *button, float x, float y, bool clicked) {
-	button_update(&button->button, x,y, clicked);
+bool imagebutton_update(ImageButton *button, float x, float y, bool clicked) {
+	bool inside = button_update(&button->button, x,y, clicked);
+	bool res = button->inside != inside;
+	button->inside = inside;
+	return res;
 }
-
 
 /// @brief Renders an ImageButton.
 /// @param button The button to render.
 void imagebutton_render(ImageButton *button) {
-	render_texture(button->image_vao, button->image);
+	if (!button) return;
+	render_texture(button->image_vao, button->image, 1.0f-button->inside*0.2f);
 }
