@@ -30,6 +30,9 @@ int main(int argc, char *argv[]) {
 		y[i] = sin(x[i]);
 	}
 
+
+	argus_set_screenshot_path("./screenshot/sub///");
+
 	argus_graph_add_curve();
 	argus_graph_set_current_curve(0);
 	argus_curve_set_size(N);

@@ -5,6 +5,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <GL/glew.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 #include "curve.h"
 #include "curves.h"
 
@@ -140,6 +143,28 @@ static bool screenshot_save_fbo_content(const char *path) {
 	return true;
 }
 
+/// @brief Creates the parent folder of path.
+/// @param path The file for wich the parent folder will be created.
+/// @param len The length of path.
+/// @return false if there was an error.
+static bool screenshot_create_folder(char* path) {
+    char *dir = path;
+    while ((dir = strchr(dir + 1, '/')) != NULL) {
+        *dir = '\0';
+        if (mkdir(path, 0777) == -1 && errno != EEXIST) {
+			fprintf(stderr, "[ARGUS]: error: unable to create the screenshot folder!\n");
+			return false;
+        }
+        *dir = '/';
+    }
+    if (mkdir(path, 0777) == -1 && errno != EEXIST) {
+        fprintf(stderr, "[ARGUS]: error: unable to create the screenshot folder!\n");
+        return false;
+    }
+	return true;
+}
+
+
 
 /// @brief Takes a screenshot of a graph and saves it into a file.
 /// @param graph The graph to take a screen of.
@@ -200,16 +225,20 @@ bool screenshot_graph(Graph *graph, Glyphs *glyphs, const char *name) {
 	// Creates the path of the screenshot image.
 	const size_t name_len = strlen(name);
 	const size_t screenshot_folder_len = strlen(screenshot_folder);
-	char *path = malloc(name_len+screenshot_folder_len+5);
+	char *path = malloc(name_len+screenshot_folder_len+6);
 	if (!path) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc the path buffer for the screenshot graph!\n");
 		return false;
 	}
 	memcpy(path, screenshot_folder, screenshot_folder_len);
-	memcpy(path+screenshot_folder_len, name, name_len);
-	memcpy(path+screenshot_folder_len+name_len, ".png", 5);
+	memcpy(path+screenshot_folder_len+1, name, name_len);
+	memcpy(path+screenshot_folder_len+name_len+1, ".png", 5);
+	path[screenshot_folder_len] = '/';
 
 	// Saves the generated screenshot.
-	screenshot_save_fbo_content(path);
+	if (!screenshot_create_folder(path) || !screenshot_save_fbo_content(path)) {
+		fprintf(stderr, "[ARGUS]: error: unable to save the screenshot in '%s'!\n", path);
+		return false;
+	}
 	return true;
 }
