@@ -2,7 +2,15 @@
 #include "vector.h"
 
 #include <math.h>
+#include <stdio.h>
 
+
+
+void f(void* args, double dt) {
+	static int i = 0;
+	printf("---> %lf\n", dt*(i+1));
+	++i;
+}
 
 
 #define N 1000
@@ -17,6 +25,12 @@ int main(int argc, char *argv[]) {
 	argus_set_grid_size(2,2);
 
 	argus_graph_set_title("Graph 1");
+
+	argus_set_update_function(f, NULL);
+	argus_set_update_frequency(1);
+	argus_set_update_duration(0.8);
+	argus_set_update_timestep(0.1);
+
 
 	argus_set_current_graph(1,1);
 	argus_graph_set_title("Elément numéro 4");

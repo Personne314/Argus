@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "structs.h"
 #include "vector.h"
 
@@ -32,14 +35,23 @@ void argus_set_grid_size(int m, int n);
 // Sets the graph currently being manipulated.
 void argus_set_current_graph(int x, int y);
 
-// Defines the update function of the graph data.
-void argus_set_update_function(void (*func)(void*, double), void *args);
-
 // Defines the current screenshot save path.
 void argus_set_screenshot_path(const char * path);
 
 // Defines the current screenshot size.
 void argus_set_screenshot_size(size_t width, size_t height);
+
+// Sets the update frequency of the data.
+void argus_set_update_frequency(float f);
+
+// Sets the update duration of the data.
+void argus_set_update_duration(float d);
+
+// Sets the update timestep of the data.
+void argus_set_update_timestep(float t);
+
+// Sets the window render frequency.
+void argus_set_render_frequency(float f);
 
 
 ////////////////////////////////////////////////////////////////
@@ -77,7 +89,7 @@ void argus_graph_remove_curve();
 void argus_graph_set_current_curve(size_t id);
 
 // Returns the number of curves in the current graph.
-size_t argus_graph_get_current_curve_number();
+size_t argus_graph_get_curve_amount();
 
 // Sets the auto-adapt parameter for both axis.
 void argus_graph_auto_adapt(bool adapt);

@@ -29,9 +29,10 @@ static bool init = false;
 // Argus window components.
 static SDL_Window *window;		///< SDL window used to display the graphs.
 static SDL_GLContext context;	///< OpenGL context for the rendering process.
-static int width;			///< Width of the window.
-static int height;			///< Height of the window.
-static const char *title;	///< Title of the window.
+static int width;				///< Width of the window.
+static int height;				///< Height of the window.
+static const char *title;		///< Title of the window.
+static double render_frequency;	///< Render frequencuy of the window.
 
 // Array of graphs to display in the window.
 static int lines;			///< Number of lines in the graph grid.
@@ -45,10 +46,12 @@ static Graph **grid;		///< Graphs grid.
 // Current curve id.
 static int current_curve;
 
-// Update function.
-static void (*update_func)(void*, double);	///< Function used to update the graph data.
-static void* update_args;	///< Arguments to give to the update function.
-static double dt;			///< Time interval to give to the update function.
+// Update parameters.
+static double frequency;	///< Number of updates per seconds.
+static double duration;		///< Total duration of the simulation.
+static double timestep;		///< Timestep between two updates.
+static uint64_t iteration;		///< Current iteration number.
+static uint64_t max_iteration;	///< Max iteration number.
 
 // Main mutex used to make the library thread safe.
 static pthread_mutex_t argus_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -132,14 +135,19 @@ void argus_init() {
 	window = NULL;
 	context = NULL;
 	grid = NULL;
-	update_func = NULL;
-	update_args = NULL;
-	for (int i = 0; i < SHADERNAME_SIZE; ++i) shaders[i] = NULL;
-	dt = 1.0;
+	render_frequency = 30.0f;
+	frequency = 10.0f;
+	duration = 0.0f;
+	timestep = 0.0f;
+	iteration = 0;
+	max_iteration = 0;
 	width = 640;
 	height = 480;
 	current_line = -1;
 	title = "ARGUS Window";
+	for (int i = 0; i < SHADERNAME_SIZE; ++i) {
+		shaders[i] = NULL;
+	}
 
 	// Malloc the initial grid.
 	lines = 1;
@@ -226,7 +234,9 @@ void argus_set_size(int w, int h) {
 /// @brief Sets the window title.
 /// @param title The title of the window.
 void argus_set_title(const char *window_title) {
+	CHECK_INIT(init, argus_mutex)
 	title = window_title;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the graph grid dimensions.
@@ -318,21 +328,12 @@ void argus_set_current_graph(int x, int y) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Defines the update function of the graph data.
-/// @param func Function pointer to use.
-/// @param args Arguments to give to func on each call. 
-/// @note func must takes a void* (args) and a double (the elapsed time between each call).
-void argus_set_update_function(void (*func)(void*, double), void *args) {
-	CHECK_INIT(init, argus_mutex)
-	update_func = func;
-	update_args = args;
-	pthread_mutex_unlock(&argus_mutex);
-}
-
 /// @brief Defines the current screenshot save path.
 /// @param path The location where to save the screenshot.
 void argus_set_screenshot_path(const char * path) {
+	CHECK_INIT(init, argus_mutex)
 	screenshot_set_path(path);
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Defines the current screenshot size.
@@ -340,7 +341,68 @@ void argus_set_screenshot_path(const char * path) {
 /// @param height The height of the screenshot.
 /// @note width and height must be greater than 0.
 void argus_set_screenshot_size(size_t width, size_t height) {
+	CHECK_INIT(init, argus_mutex)
 	screenshot_set_size(width, height);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the update frequency of the data.
+/// @param f The new frequency.
+/// @note This will sets the maximum amout of call to update_function per second.
+/// @note if d <= 0, no update will be done.
+void argus_set_update_frequency(float f) {
+	CHECK_INIT(init, argus_mutex)
+	if (f <= 0) {
+		fprintf(stderr, "[ARGUS]: warning: the update frequency is lower "
+			"or equal to 0. No update will be performed.\n");
+		return;
+	}
+	frequency = f;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the update duration of the data.
+/// @param d The new duration.
+/// @note update_function will be called for time in [0,d].
+/// @note if d <= 0, no update will be done.
+void argus_set_update_duration(float d) {
+	CHECK_INIT(init, argus_mutex)
+	if (d <= 0) {
+		fprintf(stderr, "[ARGUS]: warning: the update duration is lower "
+			"or equal to 0. No update will be performed.\n");
+		return;
+	}
+	duration = d;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the update timestep of the data.
+/// @param d The new timestep.
+/// @note update_function on each instant t*k in [0,duration] for k in N.
+/// @note if d <= 0, no update will be done.
+void argus_set_update_timestep(float t) {
+	CHECK_INIT(init, argus_mutex)
+	if (t <= 0) {
+		fprintf(stderr, "[ARGUS]: warning: the update timestep is lower "
+			"or equal to 0. No update will be performed.\n");
+		return;
+	}
+	timestep = t;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Sets the window render frequency.
+/// @param f The new timestep.
+/// @note f must be > 0.
+void argus_set_render_frequency(float f) {
+	CHECK_INIT(init, argus_mutex)
+	if (f <= 0) {
+		fprintf(stderr, "[ARGUS]: error: the window render frequency "
+			"must be greater than 0. It won't be changed.\n");
+		return;
+	}
+	render_frequency = f;
+	pthread_mutex_unlock(&argus_mutex);
 }
 
 
@@ -448,7 +510,7 @@ void argus_graph_set_current_curve(size_t id) {
 }
 
 /// @brief Returns the number of curves in the current graph.
-size_t argus_graph_get_current_curve_number() {
+size_t argus_graph_get_curve_amount() {
 	CHECK_INIT(init, argus_mutex, 0)
 	return curves_size(CURRENT_GRAPH->curves);
 	pthread_mutex_unlock(&argus_mutex);
@@ -608,8 +670,7 @@ void argus_curve_add_y_raw(float *data, size_t n) {
 
 
 
-#include "texture.h"
-#include "icons.h"
+
 ////////////////////////////////////////////////////////////////
 //                    Rendering function                      //
 ////////////////////////////////////////////////////////////////
@@ -619,6 +680,11 @@ void argus_curve_add_y_raw(float *data, size_t n) {
 void argus_show() {
 	CHECK_INIT(init, argus_mutex)
 
+	// Inits the iteration.
+	bool update = frequency > 0 && duration > 0 && timestep > 0;
+	max_iteration = update ? duration/timestep : 0;
+	iteration = 0;
+	
 	// Creates the window.
 	window = SDL_CreateWindow(
 		title,
@@ -697,65 +763,66 @@ void argus_show() {
 
 	// Window main loop.
 	bool run = true;
+	bool updated = false;
 	int x = 0, y = 0;
-	uint32_t last_loop = 0;
-	double updates_to_do = 0.0;
+	uint32_t last_loop_render = 0;
+	uint32_t last_loop_update = 0;
 	while (run) {
+		uint32_t time = SDL_GetTicks();
+
+		// Renders the content of the window if something has changed.
+		if (time-last_loop_render > 1000.0/render_frequency) {
+			last_loop_render = time;
+
+			// Catch the windows events.
+			SDL_Event event;
+			bool left_released = false;
+			while (SDL_PollEvent(&event)) {
+				switch (event.type) {
+				case SDL_QUIT: 
+					run = false; 
+					break;
+				case SDL_MOUSEBUTTONUP:
+					left_released = event.button.button == SDL_BUTTON_LEFT;
+					break;
+				}
+			}	
+
+			// Updates the save buttons.
+			bool updated = false;
+			SDL_GetMouseState(&x,&y);
+			const float xf = (float)x/width;
+			const float yf = (float)y/height;
+			for (size_t i = 0; i < (size_t)lines*columns; ++i) {
+				updated |= imagebutton_update(grid[i]->save, xf,yf, left_released);	
+			}
+
+			// Renders the window to update the shown data.
+			if (updated) {
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				for (int i = 0; i < lines*columns; ++i) {
+					if (!graph_prepare_dynamic(grid[i], glyphs, width, height)) {
+						fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
+						goto ARGUS_ERROR_GRAPHS_PREPARATION;
+					}
+					graph_render(grid[i], glyphs);
+				}
+				SDL_GL_SwapWindow(window);
+				updated = false;
+			}
+
+		// Updates the data.
+		} else if (update && time-last_loop_update > 1000.0/frequency) {
+			last_loop_update = time;
+			
+			/// UPDATE ///
+
+			++iteration; 
+			update = iteration != max_iteration;
+			updated = true;
 
 		// Sleeps if there is nothing to do.
-		uint32_t time = SDL_GetTicks();
-		if (time-last_loop < 20) {
-			SDL_Delay(1);
-			continue;	
-		}
-
-		// Catch the windows events.
-		SDL_Event event;
-		bool left_released = false;
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_QUIT: 
-				run = false; 
-				break;
-			case SDL_MOUSEBUTTONUP:
-				left_released = event.button.button == SDL_BUTTON_LEFT;
-				break;
-			}
-		}
-
-		// Updates the save buttons.
-		bool updated = false;
-		SDL_GetMouseState(&x,&y);
-		const float xf = (float)x/width;
-		const float yf = (float)y/height;
-		for (size_t i = 0; i < (size_t)lines*columns; ++i) {
-			updated |= imagebutton_update(grid[i]->save, xf,yf, left_released);	
-		}
-
-		// If there is an update function, calculates the amount of  
-		if (update_func) {
-			updates_to_do += (time-last_loop)/(1000.0*dt);
-			int loops_to_do = (int)updates_to_do;
-			updates_to_do -= loops_to_do;
-			for (int i = 0; i < loops_to_do; ++i) {
-				update_func(update_args, dt);
-			}
-			updated = true;			
-		}
-
-		// Renders the window to update the shown data.
-		if (updated) {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			for (int i = 0; i < lines*columns; ++i) {
-				if (!graph_prepare_dynamic(grid[i], glyphs, width, height)) {
-					fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
-					goto ARGUS_ERROR_GRAPHS_PREPARATION;
-				}
-				graph_render(grid[i], glyphs);
-			}
-			SDL_GL_SwapWindow(window);
-		}
-		last_loop = time;
+		} else SDL_Delay(1);		
 	}
 
 	// Frees in case of an error or at the end of the function.
