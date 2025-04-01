@@ -1,5 +1,4 @@
 #include "argus.h"
-#include "vector.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -13,7 +12,7 @@
 void f(float *x, float *y, double dt) {
 	static int i = 0;
 	*x = 2*3.14159265358979323/N*i;
-	*y = sin(*x);
+	*y = sin(*x*2);
 	++i;
 }
 
@@ -31,7 +30,7 @@ int main(int argc, char *argv[]) {
 	argus_graph_set_title("Graph 1");
 
 	argus_set_screenshot_path("./screenshot");
-	argus_set_update_frequency(200);
+	argus_set_update_frequency(500);
 	argus_set_update_duration(1);
 	argus_set_update_timestep(0.001);
 
@@ -40,14 +39,16 @@ int main(int argc, char *argv[]) {
 	argus_graph_set_title("Elément numéro 4");
 	argus_graph_set_x_title("Amplitude (mV)");
 	argus_graph_set_y_title("Temps (ms)");
+	
+	argus_graph_auto_adapt(ADAPTMODE_SLIDING_WINDOW);
+	argus_graph_set_x_limits(0,2);
+	argus_graph_set_y_limits(-2,2);
 
 	argus_graph_add_curve();
 	argus_graph_set_current_curve(0);
-	
 	argus_curve_set_size(N);
 	argus_curve_set_update_function(f);
 
-	argus_graph_set_y_limits(-2,2);
 	argus_curve_set_color(COLOR_TEAL);
 	argus_show();
 

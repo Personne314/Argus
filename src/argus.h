@@ -5,6 +5,7 @@
 
 #include "structs.h"
 #include "vector.h"
+#include "enums.h"
 
 
 
@@ -92,13 +93,13 @@ void argus_graph_set_current_curve(size_t id);
 size_t argus_graph_get_curve_amount();
 
 // Sets the auto-adapt parameter for both axis.
-void argus_graph_auto_adapt(bool adapt);
+void argus_graph_auto_adapt(AxisAdaptMode mode);
 
 // Sets the auto-adapt parameter for x axis.
-void argus_graph_auto_adapt_x(bool adapt);
+void argus_graph_auto_adapt_x(AxisAdaptMode mode);
 
 // Sets the auto-adapt parameter for y axis.
-void argus_graph_auto_adapt_y(bool adapt);
+void argus_graph_auto_adapt_y(AxisAdaptMode mode);
 
 // Sets the limits of the x axis of the current graph.
 void argus_graph_set_x_limits(float min, float max);

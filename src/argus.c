@@ -519,28 +519,28 @@ size_t argus_graph_get_curve_amount() {
 /// @brief Sets the auto-adapt parameter for both axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt(bool adapt) {
+void argus_graph_auto_adapt(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->x_axis.auto_adapt = adapt;
-	CURRENT_GRAPH->y_axis.auto_adapt = adapt;
+	CURRENT_GRAPH->x_axis.auto_adapt = mode;
+	CURRENT_GRAPH->y_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the auto-adapt parameter for x axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt_x(bool adapt) {
+void argus_graph_auto_adapt_x(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->x_axis.auto_adapt = adapt;
+	CURRENT_GRAPH->x_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
 /// @brief Sets the auto-adapt parameter for y axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt_y(bool adapt) {
+void argus_graph_auto_adapt_y(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->y_axis.auto_adapt = adapt;
+	CURRENT_GRAPH->y_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -554,9 +554,9 @@ void argus_graph_set_x_limits(float min, float max) {
 		fprintf(stderr, "[ARGUS]: error: min (%f) > max (%f) ! The axis limits won't change.\n", min, max);
 		return;
 	}
-	if (CURRENT_GRAPH->x_axis.auto_adapt) {
-		fprintf(stderr, "[ARGUS]: warning: x axis was on auto-adapt mode. This will be deactivated.\n");
-		CURRENT_GRAPH->x_axis.auto_adapt = false;
+	if (CURRENT_GRAPH->x_axis.auto_adapt == ADAPTMODE_AUTO_FIT) {
+		fprintf(stderr, "[ARGUS]: warning: x axis was on auto-adapt mode. This will be changed to auto-extend.\n");
+		CURRENT_GRAPH->x_axis.auto_adapt = ADAPTMODE_AUTO_EXTEND;
 	}
 	CURRENT_GRAPH->x_axis.min = min;
 	CURRENT_GRAPH->x_axis.max = max;
@@ -573,9 +573,9 @@ void argus_graph_set_y_limits(float min, float max) {
 		fprintf(stderr, "[ARGUS]: error: min (%f) > max (%f) ! The axis limits won't change.\n", min, max);
 		return;
 	}
-	if (CURRENT_GRAPH->y_axis.auto_adapt) {
-		fprintf(stderr, "[ARGUS]: warning: y axis was on auto-adapt mode. This will be deactivated.\n");
-		CURRENT_GRAPH->y_axis.auto_adapt = false;
+	if (CURRENT_GRAPH->x_axis.auto_adapt == ADAPTMODE_AUTO_FIT) {
+		fprintf(stderr, "[ARGUS]: warning: y axis was on auto-adapt mode. This will be changed to auto-extend.\n");
+		CURRENT_GRAPH->y_axis.auto_adapt = ADAPTMODE_AUTO_EXTEND;
 	}
 	CURRENT_GRAPH->y_axis.min = min;
 	CURRENT_GRAPH->y_axis.max = max;

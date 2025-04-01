@@ -119,7 +119,7 @@ float base, float d, int n, int window_width, int window_height) {
 	for (int i = 0; i < n; ++i) {
 		float value = base + i*d;
 		char text_buffer[16];
-		snprintf(text_buffer, sizeof(text_buffer), "%g", value); 
+		snprintf(text_buffer, sizeof(text_buffer), "%.g", value); 
 
 		// Calculates the number to render and converts it to a string.
 		Rect rect = {
@@ -206,7 +206,7 @@ float base, float d, int n, int window_width, int window_height) {
 		// Calculates the number to render and converts it to a string.
 		float value = base + i*d;
 		char text_buffer[16];
-		snprintf(text_buffer, sizeof(text_buffer), "%g", value); 
+		snprintf(text_buffer, sizeof(text_buffer), "%.3g", value); 
 
 		// Calculates the rect to render the text.
 		Rect rect = {

@@ -218,14 +218,7 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph!\n");
 		return false;
 	}
-
-	// Prepares the grid VAO.
-	if (!grid_prepare_static(graph, &graph->grid_rect)) {
-		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph!\n");
-		return false;
-	}
 	return true;
-
 }
 
 /// @brief Prepares the dynamic graphical components of a graph.
@@ -234,26 +227,80 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 /// @return false if there was an error.
 bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
 
-	// Adapt the x axis if needed.
-	if (graph->x_axis.auto_adapt && curves_size(graph->curves)) {
-		graph->x_axis.min = FLT_MAX;
-		graph->x_axis.max = FLT_MIN;
+	// Adapts the x axis if needed.
+	if ((graph->x_axis.auto_adapt == ADAPTMODE_AUTO_EXTEND ||
+		graph->x_axis.auto_adapt == ADAPTMODE_AUTO_FIT) && 
+		curves_size(graph->curves)) {
+		if (graph->x_axis.auto_adapt == ADAPTMODE_AUTO_FIT) {
+			graph->x_axis.min = FLT_MAX;
+			graph->x_axis.max = FLT_MIN;
+		}
 		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
 			const Curve *curve = graph->curves->data[i];
 			if (graph->x_axis.min > curve->x_min) graph->x_axis.min = curve->x_min;
 			if (graph->x_axis.max < curve->x_max) graph->x_axis.max = curve->x_max;
 		}
+
+	// Translates the x axis if needed.
+	} else if (graph->x_axis.auto_adapt == ADAPTMODE_SLIDING_WINDOW) {
+		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+			const Curve *curve = graph->curves->data[i];
+			if (!curve->to_render || !curve->x_val->size) continue;
+			float new_x = ringbuffer_at(curve->x_val, curve->x_val->size-1);	
+			if (new_x < graph->x_axis.min) {
+				float dx = new_x-graph->x_axis.min; 
+				graph->x_axis.min += dx;
+				graph->x_axis.max += dx;
+			}
+			if (new_x > graph->x_axis.max) {
+				float dx = new_x-graph->x_axis.max; 
+				graph->x_axis.min += dx;
+				graph->x_axis.max += dx;
+			}
+		}
 	}
 
 	// Adapt the y axis if needed.
-	if (graph->y_axis.auto_adapt && curves_size(graph->curves)) {
-		graph->y_axis.min = FLT_MAX;
-		graph->y_axis.max = FLT_MIN;
+	if ((graph->y_axis.auto_adapt == ADAPTMODE_AUTO_EXTEND ||
+		graph->y_axis.auto_adapt == ADAPTMODE_AUTO_FIT) && 
+		curves_size(graph->curves)) {
+		if (graph->y_axis.auto_adapt == ADAPTMODE_AUTO_FIT) {
+			graph->y_axis.min = FLT_MAX;
+			graph->y_axis.max = FLT_MIN;
+		}
 		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
 			const Curve *curve = graph->curves->data[i];
 			if (graph->y_axis.min > curve->y_min) graph->y_axis.min = curve->y_min;
 			if (graph->y_axis.max < curve->y_max) graph->y_axis.max = curve->y_max;
 		}
+
+	// Translates the y axis if needed.
+	} else if (graph->y_axis.auto_adapt == ADAPTMODE_SLIDING_WINDOW) {
+		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
+			const Curve *curve = graph->curves->data[i];
+			if (!curve->to_render || !curve->y_val->size) continue;
+			float new_y = ringbuffer_at(curve->y_val, curve->y_val->size-1);	
+			if (new_y < graph->y_axis.min) {
+				float dy = new_y-graph->y_axis.min; 
+				graph->y_axis.min += dy;
+				graph->y_axis.max += dy;
+			}
+			if (new_y > graph->y_axis.max) {
+				float dy = new_y-graph->y_axis.max; 
+				graph->y_axis.min += dy;
+				graph->y_axis.max += dy;
+			}
+		}
+	}
+
+	// Sets the default value of the graphs.
+	if (graph->x_axis.min >= graph->x_axis.max) {
+		graph->x_axis.min = 0.0f;
+		graph->x_axis.max = 1.0f;
+	}
+	if (graph->y_axis.min >= graph->y_axis.max) {
+		graph->y_axis.min = 0.0f;
+		graph->y_axis.max = 1.0f;
 	}
 
 	// Prepares the grid VAO.

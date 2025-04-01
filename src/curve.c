@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <float.h>
 #include "point.h"
 
 
@@ -18,10 +19,10 @@ Curve *curve_create() {
 	}
 	curve->color = COLOR_BLACK;
 	curve->curve_vao = NULL;
-	curve->x_min = 0.0f;
-	curve->x_max = 1.0f;
-	curve->y_min = 0.0f;
-	curve->y_max = 1.0f;
+	curve->x_min = FLT_MAX;
+	curve->x_max = FLT_MIN;
+	curve->y_min = FLT_MAX;
+	curve->y_max = FLT_MIN;
 	curve->x_val = NULL;
 	curve->y_val = NULL;
 	curve->to_render = false;
@@ -138,10 +139,7 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 		return false;
 	}
 	const size_t size = curve->x_val->size;
-	if (size <= 1) {
-		fprintf(stderr, "[ARGUS]: warning: the curve does not contain enough data to draw anything!\n");
-		return true;
-	}
+	if (size <= 1) return true;
 
 	// Gets the axis limits.
 	const float x_min = x_axis->min;

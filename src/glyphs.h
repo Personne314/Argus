@@ -5,6 +5,7 @@
 
 #include "vao.h"
 #include "structs.h"
+#include "enums.h"
 
 
 

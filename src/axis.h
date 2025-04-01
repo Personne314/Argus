@@ -9,15 +9,14 @@
 
 /// @struct Axis
 /// @brief Used to create an axis (x or y) for a graph.
-struct Axis {
-	VAO *axis_vao;		// VAO to render the graduations.
-	VAO *title_vao;		// VAO to render the title.
-	const char *title;	// Title of the axis.
-	float min;			// Min value of the axis.
-	float max;			// Max value of the axis.
-	bool auto_adapt;	// true if the axis min and max must be updated to match the curves.
-};
-typedef struct Axis Axis;
+typedef struct {
+	VAO *axis_vao;		///< VAO to render the graduations.
+	VAO *title_vao;		///< VAO to render the title.
+	const char *title;	///< Title of the axis.
+	float min;			///< Min value of the axis.
+	float max;			///< Max value of the axis.
+	AxisAdaptMode auto_adapt;	///< The adapt mode to use.
+} Axis;
 
 // Default axis value.
 #define AXIS_INIT (Axis){NULL, NULL, NULL, 0.0f, 1.0f, true}
@@ -37,4 +36,5 @@ bool axis_prepare_x_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float ra
 bool axis_prepare_y_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float range, float offset, 
 	float base, float d, int n, int window_width, int window_height);
 
+// Reset the graphical components of an axis after the rendering process.
 void axis_reset_graphics(Axis *axis);
