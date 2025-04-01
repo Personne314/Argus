@@ -24,6 +24,7 @@ Curve *curve_create() {
 	curve->y_max = 1.0f;
 	curve->x_val = NULL;
 	curve->y_val = NULL;
+	curve->to_render = false;
 	return curve;
 }
 
@@ -222,6 +223,46 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 		return false;
 	}
 	return true;
+}
+
+/// @brief Sets the update function of a curve.
+/// @param curve The curve that will be updated.
+/// @param func The function used for the update.
+/// @note func should place the coordinates of the new point in *x and *y.
+/// @note The initial value of *x and *y will be set to 0 berfore the first call to the function.
+/// @note The initial value of *x and *y will be set to the previous value added before the other calls.
+void curve_set_update_function(Curve *curve, void (*func)(float *x, float *y, double dt)) {
+	if (!curve->x_val) {
+		fprintf(stderr, "[ARGUS]: warning: the curve x axis capacity "
+			"hasn't been set! The update function won't be called.\n");
+		return;
+	}
+	if (!curve->y_val) {
+		fprintf(stderr, "[ARGUS]: warning: the curve x axis capacity "
+			"hasn't been set! The update function won't be called.\n");
+		return;
+	}
+	curve->update = func;
+}
+
+/// @brief Calls the update function of the curve.
+/// @param curve The function to update.
+/// @param dt The timestep between each update.
+void curve_update(Curve *curve, double dt) {
+	if (!curve->update || !curve->x_val || !curve->y_val) return;
+	float x = curve->x_val->size ? ringbuffer_at(curve->x_val, 0) : 0.0f;
+	float y = curve->y_val->size ? ringbuffer_at(curve->y_val, 0) : 0.0f;
+	curve->update(&x, &y, dt);
+	
+	ringbuffer_push_back(curve->x_val, x);
+	ringbuffer_push_back(curve->y_val, y);
+
+	if (x < curve->x_min) curve->x_min = x;
+	if (x > curve->x_max) curve->x_max = x;
+	if (y < curve->y_min) curve->y_min = y;
+	if (y > curve->y_max) curve->y_max = y;
+
+	printf("%f %f ; x_min:%f x_max:%f y_min:%f y_max:%f\n", x,y, curve->x_min, curve->x_max, curve->y_min, curve->y_max);
 }
 
 /// @brief Creates a VAO for a curve.

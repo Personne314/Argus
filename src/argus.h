@@ -129,6 +129,9 @@ void argus_curve_add_x_raw(float *data, size_t n);
 // Adds data to the y values of the current curve in the current graph.
 void argus_curve_add_y_raw(float *data, size_t n);
 
+// Sets the update function of the current curve.
+void argus_curve_set_update_function(void (*func)(float *x, float *y, double dt));
+
 
 ////////////////////////////////////////////////////////////////
 //                    Rendering function                      //

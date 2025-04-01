@@ -6,14 +6,18 @@
 
 
 
-void f(void* args, double dt) {
+
+#define N 1000
+
+
+void f(float *x, float *y, double dt) {
 	static int i = 0;
-	printf("---> %lf\n", dt*(i+1));
+	*x = 2*3.14159265358979323/N*i;
+	*y = sin(*x);
 	++i;
 }
 
 
-#define N 1000
 
 
 int main(int argc, char *argv[]) {
@@ -26,10 +30,9 @@ int main(int argc, char *argv[]) {
 
 	argus_graph_set_title("Graph 1");
 
-	argus_set_update_function(f, NULL);
-	argus_set_update_frequency(1);
-	argus_set_update_duration(0.8);
-	argus_set_update_timestep(0.1);
+	argus_set_update_frequency(200);
+	argus_set_update_duration(1);
+	argus_set_update_timestep(0.001);
 
 
 	argus_set_current_graph(1,1);
@@ -37,21 +40,12 @@ int main(int argc, char *argv[]) {
 	argus_graph_set_x_title("Amplitude (mV)");
 	argus_graph_set_y_title("Temps (ms)");
 
-	float x[N];
-	float y[N];
-	for (int i = 0; i < N; ++i) {
-		x[i] = 2*3.14159265358979323/N*i;
-		y[i] = sin(x[i]);
-	}
-
-
-	argus_set_screenshot_path("./screenshot/sub///");
-
 	argus_graph_add_curve();
 	argus_graph_set_current_curve(0);
+	
 	argus_curve_set_size(N);
-	argus_curve_add_x_raw(x, N);
-	argus_curve_add_y_raw(y, N);
+	argus_curve_set_update_function(f);
+
 	argus_graph_set_y_limits(-2,2);
 	argus_curve_set_color(COLOR_TEAL);
 	argus_show();

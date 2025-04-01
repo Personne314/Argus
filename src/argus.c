@@ -667,6 +667,22 @@ void argus_curve_add_y_raw(float *data, size_t n) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the update function of the current curve.
+/// @param curve The curve that will be updated.
+/// @param func The function used for the update.
+/// @note func should place the coordinates of the new point in *x and *y.
+/// @note The initial value of *x and *y will be set to 0 berfore the first call to the function.
+/// @note The initial value of *x and *y will be set to the previous value added before the other calls.
+void argus_curve_set_update_function(void (*func)(float *x, float *y, double dt)) {
+	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The update function won't change.\n");	
+		return;
+	}
+	curve_set_update_function(CURRENT_CURVE, func);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
 
 
 
@@ -789,7 +805,6 @@ void argus_show() {
 			}	
 
 			// Updates the save buttons.
-			bool updated = false;
 			SDL_GetMouseState(&x,&y);
 			const float xf = (float)x/width;
 			const float yf = (float)y/height;
@@ -800,12 +815,26 @@ void argus_show() {
 			// Renders the window to update the shown data.
 			if (updated) {
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				for (int i = 0; i < lines*columns; ++i) {
-					if (!graph_prepare_dynamic(grid[i], glyphs, width, height)) {
+				for (size_t i = 0; i < (size_t)lines*columns; ++i) {
+					Graph *graph = grid[i];
+					if (!graph_prepare_dynamic(graph, glyphs, width, height)) {
 						fprintf(stderr, "[ARGUS]: error: Error during graph preparation !\n");
 						goto ARGUS_ERROR_GRAPHS_PREPARATION;
 					}
-					graph_render(grid[i], glyphs);
+					for (size_t j = 0; j < graph->curves->size; ++j) {
+						Curve *curve = graph->curves->data[j];
+						if (!curve->to_render) continue;
+
+						// Prepares the new curve VAO.
+						curve->to_render = false;
+						if (!curve_prepare_dynamic(curve, &graph->x_axis, &graph->y_axis, graph->grid_rect)) {
+							fprintf(stderr, "[ARGUS]: error: unable to create the vao of a curve!\n");
+							goto ARGUS_ERROR_GRAPHS_PREPARATION;
+						}
+					}
+
+					// Renders the graph.
+					graph_render(graph, glyphs);
 				}
 				SDL_GL_SwapWindow(window);
 				updated = false;
@@ -814,12 +843,21 @@ void argus_show() {
 		// Updates the data.
 		} else if (update && time-last_loop_update > 1000.0/frequency) {
 			last_loop_update = time;
-			
-			/// UPDATE ///
-
+			bool graph_updated = false;
+			for (size_t i = 0; i < (size_t)lines*columns; ++i) {
+				Graph *graph = grid[i];
+				if (!graph->curves->size) continue;
+				for (size_t j = 0; j < graph->curves->size; ++j) {
+					Curve *curve = graph->curves->data[j];
+					if (!curve->update) continue;
+					curve_update(curve, timestep);
+					curve->to_render = true;
+					graph_updated = true;
+				}
+			}
 			++iteration; 
 			update = iteration != max_iteration;
-			updated = true;
+			updated = graph_updated;
 
 		// Sleeps if there is nothing to do.
 		} else SDL_Delay(1);		

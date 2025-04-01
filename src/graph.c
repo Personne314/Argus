@@ -218,6 +218,12 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 		fprintf(stderr, "[ARGUS]: error: unable to create the VAO for the background of a graph!\n");
 		return false;
 	}
+
+	// Prepares the grid VAO.
+	if (!grid_prepare_static(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
+		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph!\n");
+		return false;
+	}
 	return true;
 
 }
@@ -227,9 +233,13 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 /// @note This has to be called before each graph_render call.
 /// @return false if there was an error.
 bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int window_height) {
+	static int i = 0;
+	printf("%d %p\n",i,graph);
+	++i;
 
 	// Adapt the x axis if needed.
 	if (graph->x_axis.auto_adapt && curves_size(graph->curves)) {
+		printf("auto-adapting: %f %f\n", graph->x_axis.min, graph->x_axis.max);
 		graph->x_axis.min = FLT_MAX;
 		graph->x_axis.max = FLT_MIN;
 		for (size_t i = 0; i < curves_size(graph->curves); ++i) {
@@ -237,6 +247,7 @@ bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int w
 			if (graph->x_axis.min > curve->x_min) graph->x_axis.min = curve->x_min;
 			if (graph->x_axis.max < curve->x_max) graph->x_axis.max = curve->x_max;
 		}
+		printf("after: %f %f\n", graph->x_axis.min, graph->x_axis.max);
 	}
 
 	// Adapt the y axis if needed.
@@ -251,7 +262,7 @@ bool graph_prepare_dynamic(Graph *graph, Glyphs *glyphs, int window_width, int w
 	}
 
 	// Prepares the grid VAO.
-	if (!grid_prepare_graphics(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
+	if (!grid_prepare_dynamic(graph, glyphs, &graph->grid_rect, window_width, window_height)) {
 		fprintf(stderr, "[ARGUS]: error: unable to create the grid of a graph!\n");
 		return false;
 	}

@@ -10,13 +10,13 @@
 
 
 
-/// @brief Prepares the VAO for the grid.
+/// @brief Prepares the VAO for the grid static part.
 /// @param vao Pointer used to return the VAO.
 /// @param x_axis x axis of the grid.
 /// @param y_axis y axis of the grid.
 /// @param p_grid_rect Pointer to the grid rect.
 /// @return false if there was an error.
-bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height) {
+bool grid_prepare_static(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height) {
 	Rect grid_rect = *p_grid_rect;
 
 	// Frees the previous VAO.
@@ -100,6 +100,36 @@ bool grid_prepare_graphics(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int 
 		fprintf(stderr, "[ARGUS]: error: unable to create a graph grid VAO !\n");
 		return false;
 	}
+
+	return true;
+}
+
+/// @brief Prepares the VAO for the grid dynamic part.
+/// @param vao Pointer used to return the VAO.
+/// @param x_axis x axis of the grid.
+/// @param y_axis y axis of the grid.
+/// @param p_grid_rect Pointer to the grid rect.
+/// @return false if there was an error.
+bool grid_prepare_dynamic(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height) {
+	Rect grid_rect = *p_grid_rect;
+
+	// Calculates the number of values to display.
+	const float x_range = graph->x_axis.max - graph->x_axis.min;
+	const float y_range = graph->y_axis.max - graph->y_axis.min;
+	float dx = powf(10.0f, floor(log10f(x_range)));
+	float dy = powf(10.0f, floor(log10f(y_range)));
+	if (x_range/dx < 5) dx = x_range/5;
+	if (x_range/dx > 8) dx = x_range/8;
+	if (y_range/dy < 4) dy = y_range/4;
+	if (y_range/dy > 6) dy = y_range/6;
+
+	// Calculates the positions of the lines.
+	const int n_x = ceil(x_range/dx);
+	const int n_y = ceil(y_range/dy);
+	const float min_x_grad = dx*ceil(graph->x_axis.min/dx);
+	const float min_y_grad = dy*ceil(graph->y_axis.min/dy);
+	const float x_offset = (min_x_grad-graph->x_axis.min)/x_range;
+	const float y_offset = (min_y_grad-graph->y_axis.min)/y_range;
 
 	// Creates the axis VAOs.
 	if (!axis_prepare_x_axis(&graph->x_axis, glyphs, &graph->grid_rect, x_range,
