@@ -20,8 +20,8 @@ static size_t fbo_width	  = 0;	//< The FBO's texture width.
 static size_t fbo_height  = 0;	//< The FBO's texture height.
 
 // Parameters of the screenshots.
-static size_t screenshot_width = 480;		 //< The width of the screenshots.
-static size_t screenshot_height = 640;		 //< The height of the screenshots.
+static size_t screenshot_width = 640;		 //< The width of the screenshots.
+static size_t screenshot_height = 480;		 //< The height of the screenshots.
 static const char *screenshot_folder = "./"; //< The folder where to save the screenshots.
 
 
@@ -156,10 +156,6 @@ static bool screenshot_create_folder(char* path) {
 			return false;
         }
         *dir = '/';
-    }
-    if (mkdir(path, 0777) == -1 && errno != EEXIST) {
-        fprintf(stderr, "[ARGUS]: error: unable to create the screenshot folder!\n");
-        return false;
     }
 	return true;
 }

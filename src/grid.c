@@ -16,7 +16,7 @@
 /// @param y_axis y axis of the grid.
 /// @param p_grid_rect Pointer to the grid rect.
 /// @return false if there was an error.
-bool grid_prepare_static(Graph *graph, Glyphs *glyphs, Rect *p_grid_rect, int window_width, int window_height) {
+bool grid_prepare_static(Graph *graph, Rect *p_grid_rect) {
 	Rect grid_rect = *p_grid_rect;
 
 	// Frees the previous VAO.

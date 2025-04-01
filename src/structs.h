@@ -15,6 +15,7 @@ typedef struct {
 #define RECT_INIT (Rect){0.0f,0.0f,0.0f,0.0f}
 
 
+
 /// @struct Color
 /// @brief Struct used to manipulate an rgb formated color. 
 typedef struct {

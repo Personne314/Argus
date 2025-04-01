@@ -253,16 +253,12 @@ void curve_update(Curve *curve, double dt) {
 	float x = curve->x_val->size ? ringbuffer_at(curve->x_val, 0) : 0.0f;
 	float y = curve->y_val->size ? ringbuffer_at(curve->y_val, 0) : 0.0f;
 	curve->update(&x, &y, dt);
-	
 	ringbuffer_push_back(curve->x_val, x);
 	ringbuffer_push_back(curve->y_val, y);
-
 	if (x < curve->x_min) curve->x_min = x;
 	if (x > curve->x_max) curve->x_max = x;
 	if (y < curve->y_min) curve->y_min = y;
 	if (y > curve->y_max) curve->y_max = y;
-
-	printf("%f %f ; x_min:%f x_max:%f y_min:%f y_max:%f\n", x,y, curve->x_min, curve->x_max, curve->y_min, curve->y_max);
 }
 
 /// @brief Creates a VAO for a curve.

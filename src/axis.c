@@ -101,8 +101,6 @@ bool axis_prepare_x_axis(Axis *axis, Glyphs *glyphs, Rect *p_grid_rect, float ra
 float base, float d, int n, int window_width, int window_height) {
 	vao_free(&axis->axis_vao);
 
-	printf("prepare x\n");
-
 	// Constants used for the vertices generation.
 	const float window_ratio = (float)window_width/window_height;
 	const float dy = 5.0f/window_height;

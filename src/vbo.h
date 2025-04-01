@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 
 
+
 /// @struct VBO
 /// @brief Used to manage an OpenGL VBO.
 typedef struct {

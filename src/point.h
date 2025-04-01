@@ -6,8 +6,8 @@
 /// @struct Point
 /// @brief Represent a point in a plane.
 typedef struct {
-    float x;
-    float y;
+    float x;    ///< x coordinate of the point.
+    float y;    ///< y coordinate of the point.
 } Point;
 
 

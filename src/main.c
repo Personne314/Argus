@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
 
 	argus_graph_set_title("Graph 1");
 
+	argus_set_screenshot_path("./screenshot");
 	argus_set_update_frequency(200);
 	argus_set_update_duration(1);
 	argus_set_update_timestep(0.001);
