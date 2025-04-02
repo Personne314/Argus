@@ -16,6 +16,9 @@
 // Used to initialize the lib. 
 void argus_init();
 
+// Returns the init state of the lib.
+bool argus_is_init();
+
 // Frees the memory used by the lib.
 void argus_quit();
 
@@ -53,6 +56,9 @@ void argus_set_update_timestep(float t);
 
 // Sets the window render frequency.
 void argus_set_render_frequency(float f);
+
+// Sets the window background color.
+void argus_set_background_color(Color c);
 
 
 ////////////////////////////////////////////////////////////////
@@ -92,14 +98,14 @@ void argus_graph_set_current_curve(size_t id);
 // Returns the number of curves in the current graph.
 size_t argus_graph_get_curve_amount();
 
-// Sets the auto-adapt parameter for both axis.
-void argus_graph_auto_adapt(AxisAdaptMode mode);
+// Sets the adapt parameter for both axis.
+void argus_graph_adapt(AxisAdaptMode mode);
 
-// Sets the auto-adapt parameter for x axis.
-void argus_graph_auto_adapt_x(AxisAdaptMode mode);
+// Sets the adapt parameter for x axis.
+void argus_graph_adapt_x(AxisAdaptMode mode);
 
-// Sets the auto-adapt parameter for y axis.
-void argus_graph_auto_adapt_y(AxisAdaptMode mode);
+// Sets the adapt parameter for y axis.
+void argus_graph_adapt_y(AxisAdaptMode mode);
 
 // Sets the limits of the x axis of the current graph.
 void argus_graph_set_x_limits(float min, float max);

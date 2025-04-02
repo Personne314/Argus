@@ -195,10 +195,18 @@ bool screenshot_graph(Graph *graph, Glyphs *glyphs, const char *name) {
 		graph_fullscreen->curves->data[i] = graph->curves->data[i];
 	}
 	
-	// Prepares the graph.
+	// Copies the axis parameters.
 	graph_fullscreen->title = graph->title;
 	graph_fullscreen->x_axis.title = graph->x_axis.title;
 	graph_fullscreen->y_axis.title = graph->y_axis.title;
+	graph_fullscreen->x_axis.auto_adapt = graph->x_axis.auto_adapt;
+	graph_fullscreen->y_axis.auto_adapt = graph->y_axis.auto_adapt;
+	graph_fullscreen->x_axis.min = graph->x_axis.min;
+	graph_fullscreen->y_axis.min = graph->y_axis.min;
+	graph_fullscreen->x_axis.max = graph->x_axis.max;
+	graph_fullscreen->y_axis.max = graph->y_axis.max;
+
+	// Prepares the graph.
 	graph_prepare_static(graph_fullscreen, glyphs, fbo_width, fbo_height);
 	graph_prepare_dynamic(graph_fullscreen, glyphs, fbo_width, fbo_height);
 	imagebutton_free(&graph_fullscreen->save);

@@ -33,6 +33,7 @@ static int width;				///< Width of the window.
 static int height;				///< Height of the window.
 static const char *title;		///< Title of the window.
 static double render_frequency;	///< Render frequencuy of the window.
+static Color background_color;
 
 // Array of graphs to display in the window.
 static int lines;			///< Number of lines in the graph grid.
@@ -135,6 +136,7 @@ void argus_init() {
 	window = NULL;
 	context = NULL;
 	grid = NULL;
+	background_color = COLOR_GRAY2;
 	render_frequency = 30.0f;
 	frequency = 10.0f;
 	duration = 0.0f;
@@ -180,6 +182,14 @@ void argus_init() {
 	pthread_mutex_unlock(&argus_mutex);
 	init = true;
 }
+
+/// @brief Returns the init state of the lib.
+/// @return true if the lib is initialized.
+bool argus_is_init() {
+	return init;
+}
+
+
 
 /// @brief Frees the memory used and quit the SDL.
 /// @note This must be called once you're done using this lib.
@@ -405,6 +415,14 @@ void argus_set_render_frequency(float f) {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
+/// @brief Sets the window background color.
+/// @param c The color to use.
+void argus_set_background_color(Color c) {
+	CHECK_INIT(init, argus_mutex)
+	background_color = c;
+	pthread_mutex_unlock(&argus_mutex);
+}
+
 
 
 
@@ -516,29 +534,29 @@ size_t argus_graph_get_curve_amount() {
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the auto-adapt parameter for both axis.
+/// @brief Sets the adapt parameter for both axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt(AxisAdaptMode mode) {
+void argus_graph_adapt(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->x_axis.auto_adapt = mode;
 	CURRENT_GRAPH->y_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the auto-adapt parameter for x axis.
+/// @brief Sets the adapt parameter for x axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt_x(AxisAdaptMode mode) {
+void argus_graph_adapt_x(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->x_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
-/// @brief Sets the auto-adapt parameter for y axis.
+/// @brief Sets the adapt parameter for y axis.
 /// @note If true, the axis min/max will be automatically changed to match the contained curves.
 /// @param adapt The value of the auto-adapt parameter.
-void argus_graph_auto_adapt_y(AxisAdaptMode mode) {
+void argus_graph_adapt_y(AxisAdaptMode mode) {
 	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->y_axis.auto_adapt = mode;
 	pthread_mutex_unlock(&argus_mutex);
@@ -728,7 +746,7 @@ void argus_show() {
 	glDepthFunc(GL_ALWAYS);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(background_color.r, background_color.g, background_color.b, 1.0f);
 	SDL_GL_SetSwapInterval(0);
 
 	// GLEW initialization.
