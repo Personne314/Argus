@@ -7,6 +7,7 @@ typedef enum {
 	INSTR_NONE,
 	INSTR_SET_TITLE,
 	INSTR_SHOW,
+	INSTR_SET_SIZE,
 	INSTR_QUIT
 } InstructionType;
 

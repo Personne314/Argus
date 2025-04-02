@@ -15,7 +15,7 @@ void screenshot_fbo_free();
 
 
 // Defines the current screenshot size.
-void screenshot_set_size(size_t width, size_t height);
+void screenshot_set_size(int width, int height);
 
 // Defines the current screenshot save path.
 void screenshot_set_path(const char *path);

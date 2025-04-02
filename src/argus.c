@@ -31,7 +31,7 @@ static SDL_Window *window;		///< SDL window used to display the graphs.
 static SDL_GLContext context;	///< OpenGL context for the rendering process.
 static int width;				///< Width of the window.
 static int height;				///< Height of the window.
-static const char *title;		///< Title of the window.
+static char *title;		///< Title of the window.
 static double render_frequency;	///< Render frequencuy of the window.
 static Color background_color;
 
@@ -146,10 +146,11 @@ void argus_init() {
 	width = 640;
 	height = 480;
 	current_line = -1;
-	title = "ARGUS Window";
+	title = NULL;
 	for (int i = 0; i < SHADERNAME_SIZE; ++i) {
 		shaders[i] = NULL;
 	}
+	screenshot_set_path(NULL);
 
 	// Malloc the initial grid.
 	lines = 1;
@@ -195,15 +196,21 @@ bool argus_is_init() {
 /// @note This must be called once you're done using this lib.
 void argus_quit() {
 	CHECK_INIT(init, argus_mutex);
-	
+
 	// Frees the argus variables.
+	free(title);
+	title = NULL;
 	if (grid) {
 		for (int i = 0; i < lines*columns; ++i) graph_free(grid+i);
 		free(grid);
+		grid = NULL;
 	}
+	screenshot_set_path(NULL);
 	for (int i = 0; i < SHADERNAME_SIZE; ++i) shader_free(shaders+i);
 	if (context) SDL_GL_DeleteContext(context);
 	if (window) SDL_DestroyWindow(window);
+	context = NULL;
+	window = NULL;
 
 	// Quits the SDL. 
 	TTF_Quit();
@@ -245,7 +252,18 @@ void argus_set_size(int w, int h) {
 /// @param title The title of the window.
 void argus_set_title(const char *window_title) {
 	CHECK_INIT(init, argus_mutex)
-	title = window_title;
+	free(title);
+	if (!window_title) {
+		title = NULL;
+		return;
+	}
+	char *str = malloc(strlen(window_title)+1);
+	if (!str) {
+		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer for the window title. It won't be changed!\n");
+		return;
+	}
+	strcpy(str, window_title);
+	title = str;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -350,7 +368,7 @@ void argus_set_screenshot_path(const char * path) {
 /// @param width The width of the screenshot.
 /// @param height The height of the screenshot.
 /// @note width and height must be greater than 0.
-void argus_set_screenshot_size(size_t width, size_t height) {
+void argus_set_screenshot_size(int width, int height) {
 	CHECK_INIT(init, argus_mutex)
 	screenshot_set_size(width, height);
 	pthread_mutex_unlock(&argus_mutex);
@@ -721,7 +739,7 @@ void argus_show() {
 	
 	// Creates the window.
 	window = SDL_CreateWindow(
-		title,
+		title ? title : "ARGUS Window",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
 		width, height,
 		SDL_WINDOW_OPENGL

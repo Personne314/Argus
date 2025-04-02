@@ -20,9 +20,9 @@ static size_t fbo_width	  = 0;	//< The FBO's texture width.
 static size_t fbo_height  = 0;	//< The FBO's texture height.
 
 // Parameters of the screenshots.
-static size_t screenshot_width = 640;		 //< The width of the screenshots.
-static size_t screenshot_height = 480;		 //< The height of the screenshots.
-static const char *screenshot_folder = "./"; //< The folder where to save the screenshots.
+static int screenshot_width = 640;		//< The width of the screenshots.
+static int screenshot_height = 480;		//< The height of the screenshots.
+static char *screenshot_folder = NULL;	//< The folder where to save the screenshots.
 
 
 
@@ -31,7 +31,7 @@ static const char *screenshot_folder = "./"; //< The folder where to save the sc
 bool screenshot_fbo_create() {
 	screenshot_fbo_free();
 	if (!screenshot_width || !screenshot_height) {
-		fprintf(stderr, "[ARGUS]: error: (%ld,%ld) isn't a valid dimension "
+		fprintf(stderr, "[ARGUS]: error: (%d,%d) isn't a valid dimension "
 			"to create the screenshot FBO!\n", screenshot_width, screenshot_height);
 		return false;
 	}
@@ -81,9 +81,9 @@ void screenshot_fbo_free() {
 /// @param width The width of the screenshot.
 /// @param height The height of the screenshot.
 /// @note width and height must be greater than 0.
-void screenshot_set_size(size_t width, size_t height) {
+void screenshot_set_size(int width, int height) {
 	if (!width || !height) {
-		fprintf(stderr, "[ARGUS]: error: (%ld, %ld) is not a valid dimension for screenshots !\n", width, height);
+		fprintf(stderr, "[ARGUS]: error: (%d,%d) is not a valid dimension for screenshots !\n", width, height);
 		return;
 	}
 	screenshot_width = width;
@@ -93,8 +93,19 @@ void screenshot_set_size(size_t width, size_t height) {
 /// @brief Defines the current screenshot save path.
 /// @param path The location where to save the screenshot.
 void screenshot_set_path(const char *path) {
-	if (!path || !strlen(path)) screenshot_folder = "./";
-	else screenshot_folder = path;
+	free(screenshot_folder);
+	if (!path || !strlen(path)) {
+		screenshot_folder = NULL;
+		return;
+	}
+	char *str = malloc(strlen(path)+1);
+	if (!str) {
+		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer "
+			"for the screenshot folder. It won't be changed!\n");
+		return;
+	}
+	strcpy(str, path);
+	screenshot_folder = str;
 }
 
 
@@ -138,6 +149,7 @@ static bool screenshot_save_fbo_content(const char *path) {
 
 	// Saves the image.
 	IMG_SavePNG(surface, path);
+	printf("[ARGUS]: info: a screenshot was save as \"%s\".\n", path);
 	SDL_FreeSurface(surface);
 	free(pixels);
 	return true;
@@ -227,17 +239,18 @@ bool screenshot_graph(Graph *graph, Glyphs *glyphs, const char *name) {
 	graph_free(&graph_fullscreen);
 
 	// Creates the path of the screenshot image.
+	const char *folder = screenshot_folder ? screenshot_folder : "./";
 	const size_t name_len = strlen(name);
-	const size_t screenshot_folder_len = strlen(screenshot_folder);
-	char *path = malloc(name_len+screenshot_folder_len+6);
+	const size_t folder_len = strlen(folder);
+	char *path = malloc(name_len+folder_len+6);
 	if (!path) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc the path buffer for the screenshot graph!\n");
 		return false;
 	}
-	memcpy(path, screenshot_folder, screenshot_folder_len);
-	memcpy(path+screenshot_folder_len+1, name, name_len);
-	memcpy(path+screenshot_folder_len+name_len+1, ".png", 5);
-	path[screenshot_folder_len] = '/';
+	memcpy(path, folder, folder_len);
+	memcpy(path+folder_len+1, name, name_len);
+	memcpy(path+folder_len+name_len+1, ".png", 5);
+	path[folder_len] = '/';
 
 	// Saves the generated screenshot.
 	if (!screenshot_create_folder(path) || !screenshot_save_fbo_content(path)) {

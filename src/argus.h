@@ -40,10 +40,10 @@ void argus_set_grid_size(int m, int n);
 void argus_set_current_graph(int x, int y);
 
 // Defines the current screenshot save path.
-void argus_set_screenshot_path(const char * path);
+void argus_set_screenshot_path(const char *path);
 
 // Defines the current screenshot size.
-void argus_set_screenshot_size(size_t width, size_t height);
+void argus_set_screenshot_size(int width, int height);
 
 // Sets the update frequency of the data.
 void argus_set_update_frequency(float f);

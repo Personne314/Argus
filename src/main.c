@@ -13,8 +13,13 @@ bool execute_instruction(Instruction *instruction) {
 	switch (instruction->type) {
 	case INSTR_QUIT: return false;
 	case INSTR_SET_TITLE:
+		printf("[ARGUS]: info: setting window title to \"%s\".\n", (char*)instruction->param1);
 		argus_set_title(instruction->param1);
-		fprintf(stdout, "[ARGUS]: info: window title was set to \"%s\".\n", instruction->param1);
+		break;
+	case INSTR_SET_SIZE:
+		printf("[ARGUS]: info: setting window size to (%d,%d).\n", 
+			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		argus_set_size((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
 		break;
 	case INSTR_SHOW:
 		argus_show();
