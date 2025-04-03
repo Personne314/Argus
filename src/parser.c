@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include "structs.h"
 
 
 
@@ -24,7 +25,7 @@ typedef enum {
 /// @enum TokenType
 /// @brief This enum lists all the existing tokens.
 typedef enum {
-	TK_EOF,			///< Type for an End Of File token.
+	TK_EOS,			///< Type for an End Of String token.
 	TK_UNKNOWN,		///< Type for an unknown token in case of an error.
 	TK_TITLE,		///< Type for the 'title' keyword.
 	TK_SHOW,		///< Type for the 'show' keyword.
@@ -34,8 +35,10 @@ typedef enum {
 	TK_GRAPH,		///< Type for the 'graph' keyword.
 	TK_GRID,		///< Type for the 'grid' keyword.
 	TK_PATH,		///< Type for the 'path' keyword.
-	TK_STRING,		///< Type for a string litteral.
-	TK_NUMBER		///< Type for a number litteral.
+	TK_COLOR,		///< Type for the 'color' keyword.
+	TK_LITT_STRING,	///< Type for a string litteral.
+	TK_LITT_NUMBER,	///< Type for a number litteral.
+	TK_LITT_COLOR	///< Type for a color litteral.
 } TokenType;
 
 
@@ -47,6 +50,26 @@ typedef struct {
 	void *value;	///< The token value in case of a litteral.
 	size_t start;	///< The token position in the line for debugging purpose.
 } Token;
+
+
+
+/// @brief Calculates the int value of an hex digit.
+/// @param c The hex digit to use.
+/// @return The int value of the hex digit.
+int parse_hex_to_int(char c) {
+	if (c >= '0' && c <= '9') return c-'0';
+	if (c >= 'a' && c <= 'f') return c-'a'+10;
+	if (c >= 'A' && c <= 'F') return c-'A'+10;
+	return 0;
+}
+
+/// @brief Calculates the float value of an 2-hex-digit number.
+/// @param str The string to use.
+/// @return The float value.
+/// @note This is a linear function from [0x00,0xFF] into [0.0f,1.0f]
+float parse_hex_to_float(const char *str) {
+	return ((parse_hex_to_int(str[0])<<4)+parse_hex_to_int(str[1]))/255.0f;
+}
 
 
 
@@ -75,10 +98,13 @@ Token scan_token(const char *line, size_t *p_pos) {
 
 	// Check for a known pattern depending of the first character.
 	char c = line[0];
-	if (!c) return (Token){TK_EOF, NULL, start};
+	if (!c) return (Token){TK_EOS, NULL, start};
 	switch (c) {
 
 	// Scan for possible keywords.
+	case 'c':
+		SCAN_KEYWORD("color", TK_COLOR);
+		break;
 	case 'g':
 		SCAN_KEYWORD("graph", TK_GRAPH);
 		SCAN_KEYWORD("grid", TK_GRID);
@@ -100,8 +126,6 @@ Token scan_token(const char *line, size_t *p_pos) {
 
 	// Scans a string.
 	case '"':
-
-		// Go to the end of the string.
 		while (line[end]) {
 			if (line[end] == '"') break; 
 			++end;
@@ -122,7 +146,29 @@ Token scan_token(const char *line, size_t *p_pos) {
 		memcpy(string, line+1, end-1);
 		string[end-1] = '\0';
 		*p_pos += end+1;
-		return (Token){TK_STRING, string, start};
+		return (Token){TK_LITT_STRING, string, start};
+		break;
+
+	// Scans a color.
+	case '#':
+		++end;
+		while (isxdigit(line[end])) ++end;
+		if (end != 7 || (line[end] && !isspace(line[end]))) {
+			fprintf(stderr, "[ARGUS]: a color RGB code must be 6 characters long!\n"); 
+			return (Token){TK_UNKNOWN, NULL, start};
+		}
+
+		// Creates the token.
+		Color *color = malloc(sizeof(Color));
+		if (!color) {
+			fprintf(stderr, "[ARGUS]: unable to malloc a buffer for a color!\n"); 
+			return (Token){TK_UNKNOWN, NULL, start};
+		}
+		color->r = parse_hex_to_float(line+1);
+		color->g = parse_hex_to_float(line+3);
+		color->b = parse_hex_to_float(line+5);
+		*p_pos += 7;
+		return (Token){TK_LITT_COLOR, color, start};
 		break;
 
 	// Scans a number.
@@ -186,7 +232,7 @@ Token scan_token(const char *line, size_t *p_pos) {
 			}
 			*value = res;
 			*p_pos += end;
-			return (Token){TK_NUMBER, value, start};
+			return (Token){TK_LITT_NUMBER, value, start};
 		}
 	}
 
@@ -226,7 +272,7 @@ Instruction parse_line(const char *line) {
 	// Parse each token depending of the current state and the instruction type. 
 	size_t pos = 0;
 	Token token;
-	while (line[pos]) {
+	while (token.type != TK_EOS) {
 		token = scan_token(line, &pos);
 		switch (instruction.type) {
 
@@ -238,6 +284,7 @@ Instruction parse_line(const char *line) {
 			// Activates the quit and show instructions detection.
 			case TK_QUIT: instruction.type = INSTR_QUIT; break;
 			case TK_SHOW: instruction.type = INSTR_SHOW; break;
+			case TK_COLOR: instruction.type = INSTR_SET_BACKGROUND_COLOR; break;
 
 			// This activates 'title' instructions.
 			case TK_TITLE: instruction.type = INSTR_SET_TITLE; break;
@@ -256,7 +303,7 @@ Instruction parse_line(const char *line) {
 				break;
 
 			// Activates the grid resize instruction detection.
-			case TK_GRID: instruction.type = INSTR_GRID_SET_SIZE; break;
+			case TK_GRID: instruction.type = INSTR_SET_GRID_SIZE; break;
 
 			// Activates the screenshot instructions detection.
 			case TK_SCREENSHOT:
@@ -278,57 +325,73 @@ Instruction parse_line(const char *line) {
 
 			// Parse a number if possible. This can only append after the graph token, 
 			// bacause it can be used as an instruction or as a part of a multiple keyword instruction. 
-			case TK_NUMBER:
+			case TK_LITT_NUMBER:
 				if (state == PS_GRAPH) {
 					instruction.type = INSTR_SET_CURRENT_GRAPH;
 					instruction.param1 = token.value;
 				} else return parser_unexpected_token(&token, line, NULL);
 				break;
 
-			// Unexpected token : there nothing we can deduce from this.
-			case TK_UNKNOWN: case TK_STRING: return parser_unexpected_token(&token, line, NULL);
-
 			// EOF, there nothing left to do.
-			case TK_EOF: break;
+			case TK_EOS: break;
+
+			// Unexpected token : there nothing we can deduce from this.
+			default: return parser_unexpected_token(&token, line, NULL);
 			}
 			break;
 
 		// Case of quit and show that dont take any arguments.
 		case INSTR_QUIT: case INSTR_SHOW:
-			if (token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
+			if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
 			break;
 
 		// Gets a string to use as the window title.
 		case INSTR_SET_TITLE:
-			if (instruction.param1 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_STRING) 
+			if (instruction.param1) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_STRING) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A string was expected!");
+			}
 			instruction.param1 = token.value;
 			break;
 
 		// Gets two numbers to use as the window dimensions.
 		case INSTR_SET_SIZE:
-			if (instruction.param2 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_NUMBER) 
+			if (instruction.param2) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_NUMBER) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A number was expected!");
+			}
 			if (instruction.param1) instruction.param2 = token.value;
 			else instruction.param1 = token.value;
 			break;
 
 		// Gets a string to use as the screenshot folder path.
 		case INSTR_SCREENSHOT_SET_PATH:
-			if (instruction.param1 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_STRING) 
+			if (instruction.param1) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_STRING) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A string was expected!");
+			}
 			instruction.param1 = token.value;
 			state = PS_NONE;
 			break;
 
 		// Gets two numbers to use as the screenshot dimensions.
 		case INSTR_SCREENSHOT_SET_SIZE:
-			if (instruction.param2 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_NUMBER) 
+			if (instruction.param2) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_NUMBER) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A number was expected!");
+			}
 			if (instruction.param1) {
 				instruction.param2 = token.value;
 				state = PS_NONE;
@@ -336,10 +399,14 @@ Instruction parse_line(const char *line) {
 			break;
 
 		// Gets two numbers to use as the graph grid dimensions.
-		case INSTR_GRID_SET_SIZE:
-			if (instruction.param2 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_NUMBER) 
+		case INSTR_SET_GRID_SIZE:
+			if (instruction.param2) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_NUMBER) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A number was expected!");
+			}
 			if (instruction.param1) {
 				instruction.param2 = token.value;
 				state = PS_NONE;
@@ -348,14 +415,29 @@ Instruction parse_line(const char *line) {
 
 		// Gets two numbers to set the current graph.
 		case INSTR_SET_CURRENT_GRAPH:
-			if (instruction.param2 && token.type != TK_EOF) return parser_unexpected_token(&token, line, NULL);
-			if (token.type != TK_NUMBER) 
+			if (instruction.param2) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_NUMBER) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A number was expected!");
+			}
 			instruction.param2 = token.value;
 			state = PS_NONE;
 			break;
-		}
 
+		// Gets a color to set the window background color.
+		case INSTR_SET_BACKGROUND_COLOR:
+			if (instruction.param1) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			if (token.type != TK_LITT_COLOR) {
+				return parser_unexpected_token(&token, line, "[ARGUS]: A color was expected!");
+			}
+			instruction.param1 = token.value;
+			break;
+		}
 	}
 
 	// If the instruction ends and state wasn't reset, it means that there was something

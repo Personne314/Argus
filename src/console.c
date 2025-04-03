@@ -10,6 +10,7 @@
 
 
 bool execute_instruction(Instruction *instruction) {
+	Color color;
 	switch (instruction->type) {
 	case INSTR_QUIT: return false;
 	case INSTR_SET_TITLE:
@@ -33,7 +34,7 @@ bool execute_instruction(Instruction *instruction) {
 			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
 		argus_set_screenshot_size((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
 		break;
-	case INSTR_GRID_SET_SIZE:
+	case INSTR_SET_GRID_SIZE:
 		printf("[ARGUS]: info: setting grid size to (%d,%d).\n", 
 			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
 		argus_set_grid_size((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
@@ -41,7 +42,13 @@ bool execute_instruction(Instruction *instruction) {
 	case INSTR_SET_CURRENT_GRAPH:
 		printf("[ARGUS]: info: setting current graph to (%d,%d).\n", 
 			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
-		argus_set_current_graph((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);	
+		argus_set_current_graph((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		break;
+	case INSTR_SET_BACKGROUND_COLOR:
+		color = *(Color*)instruction->param1;
+		printf("[ARGUS]: info: setting window background color to (%f,%f,%f).\n", color.r, color.g, color.b);
+		argus_set_background_color(color);
+		break;
 	case INSTR_NONE:
 	}
 	free(instruction->param1);

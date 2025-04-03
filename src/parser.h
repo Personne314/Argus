@@ -13,8 +13,9 @@ typedef enum {
 	INSTR_SET_SIZE,		///< Sets the window size.
 	INSTR_SCREENSHOT_SET_PATH,	///< Sets the screenshot save folder path.
 	INSTR_SCREENSHOT_SET_SIZE,	///< Sets the screenshot size.
-	INSTR_GRID_SET_SIZE,		///< Sets the graph grid size.
+	INSTR_SET_GRID_SIZE,		///< Sets the graph grid size.
 	INSTR_SET_CURRENT_GRAPH,	///< Sets the current graph.
+	INSTR_SET_BACKGROUND_COLOR, ///< Sets the window background color.
 	INSTR_QUIT		///< Quit the application. 
 } InstructionType;
 
