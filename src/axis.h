@@ -12,7 +12,7 @@
 typedef struct {
 	VAO *axis_vao;		///< VAO to render the graduations.
 	VAO *title_vao;		///< VAO to render the title.
-	const char *title;	///< Title of the axis.
+	char *title;		///< Title of the axis.
 	float min;			///< Min value of the axis.
 	float max;			///< Max value of the axis.
 	AxisAdaptMode auto_adapt;	///< The adapt mode to use.

@@ -253,11 +253,12 @@ void argus_set_size(int w, int h) {
 void argus_set_title(const char *window_title) {
 	CHECK_INIT(init, argus_mutex)
 	free(title);
-	if (!window_title) {
+	const size_t size = strlen(window_title);
+	if (!window_title || !size) {
 		title = NULL;
 		return;
 	}
-	char *str = malloc(strlen(window_title)+1);
+	char *str = malloc(size+1);
 	if (!str) {
 		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer for the window title. It won't be changed!\n");
 		return;
@@ -453,7 +454,19 @@ void argus_set_background_color(Color c) {
 /// @param title The title of the graph.
 void argus_graph_set_title(const char *graph_title) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->title = graph_title;
+	free(CURRENT_GRAPH->title);
+	const size_t size = strlen(graph_title);
+	if (!graph_title || !size) {
+		CURRENT_GRAPH->title = NULL;
+		return;
+	}
+	char *str = malloc(size+1);
+	if (!str) {
+		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer for a graph title. It won't be changed!\n");
+		return;
+	}
+	strcpy(str, graph_title);
+	CURRENT_GRAPH->title = str;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -491,7 +504,19 @@ void argus_graph_set_graph_color(Color c) {
 /// @param axis_title The title of the graph x axis.
 void argus_graph_set_x_title(const char *axis_title) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->x_axis.title = axis_title;
+	free(CURRENT_GRAPH->x_axis.title);
+	const size_t size = strlen(axis_title);
+	if (!axis_title || !size) {
+		CURRENT_GRAPH->x_axis.title = NULL;
+		return;
+	}
+	char *str = malloc(size+1);
+	if (!str) {
+		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer for a graph x label. It won't be changed!\n");
+		return;
+	}
+	strcpy(str, axis_title);
+	CURRENT_GRAPH->x_axis.title = str;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -499,7 +524,19 @@ void argus_graph_set_x_title(const char *axis_title) {
 /// @param axis_title The title of the graph y axis.
 void argus_graph_set_y_title(const char *axis_title) {
 	CHECK_INIT(init, argus_mutex)
-	CURRENT_GRAPH->y_axis.title = axis_title;
+	free(CURRENT_GRAPH->y_axis.title);
+	const size_t size = strlen(axis_title);
+	if (!axis_title || !size) {
+		CURRENT_GRAPH->y_axis.title = NULL;
+		return;
+	}
+	char *str = malloc(size+1);
+	if (!str) {
+		fprintf(stderr, "[ARGUS]: warning: unable to malloc a buffer for a graph y label. It won't be changed!\n");
+		return;
+	}
+	strcpy(str, axis_title);
+	CURRENT_GRAPH->y_axis.title = str;
 	pthread_mutex_unlock(&argus_mutex);
 }
 

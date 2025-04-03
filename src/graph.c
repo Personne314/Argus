@@ -50,7 +50,7 @@ Graph *graph_create(Rect rect) {
 	graph->grid_vao = NULL;
 	graph->title_vao = NULL;
 	graph->save = NULL;
-	graph->title = "";
+	graph->title = NULL;
 
 	// Creates the curves vector.
 	graph->curves = curves_create();
@@ -72,9 +72,12 @@ void graph_free(Graph **p_graph) {
 	vao_free(&graph->background_vao);
 	vao_free(&graph->title_vao);
 	vao_free(&graph->grid_vao);
+	free(graph->x_axis.title);
+	free(graph->y_axis.title);
 	axis_reset_graphics(&graph->x_axis);
 	axis_reset_graphics(&graph->y_axis);
 	imagebutton_free(&graph->save);
+	free(graph->title);
 	free(graph);
 	*p_graph = NULL;
 }

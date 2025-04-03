@@ -24,7 +24,25 @@ bool execute_instruction(Instruction *instruction) {
 	case INSTR_SHOW:
 		argus_show();
 		break;
-	case INSTR_NONE: 
+	case INSTR_SCREENSHOT_SET_PATH:
+		printf("[ARGUS]: info: setting screenshot folder to '%s'.\n", (char*)instruction->param1);
+		argus_set_screenshot_path(instruction->param1);
+		break;
+	case INSTR_SCREENSHOT_SET_SIZE:
+		printf("[ARGUS]: info: setting screenshot size to (%d,%d).\n", 
+			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		argus_set_screenshot_size((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		break;
+	case INSTR_GRID_SET_SIZE:
+		printf("[ARGUS]: info: setting grid size to (%d,%d).\n", 
+			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		argus_set_grid_size((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		break;
+	case INSTR_SET_CURRENT_GRAPH:
+		printf("[ARGUS]: info: setting current graph to (%d,%d).\n", 
+			(int)*(double*)instruction->param1, (int)*(double*)instruction->param2);
+		argus_set_current_graph((int)*(double*)instruction->param1, (int)*(double*)instruction->param2);	
+	case INSTR_NONE:
 	}
 	free(instruction->param1);
 	free(instruction->param2);
@@ -41,6 +59,7 @@ int main() {
 
 	argus_init();
 	if (!argus_is_init()) return -1;
+	system("clear");
 	printf("[ARGUS] Welcome !\n");
 
 	using_history();

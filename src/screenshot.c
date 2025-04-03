@@ -236,6 +236,9 @@ bool screenshot_graph(Graph *graph, Glyphs *glyphs, const char *name) {
 	// Frees the temp graph.
 	graph_fullscreen->curves->size = 0;
 	for (size_t i = 0; i < n; i++) graph_fullscreen->curves->data[i] = NULL;
+	graph_fullscreen->title = NULL;
+	graph_fullscreen->x_axis.title = NULL;
+	graph_fullscreen->y_axis.title = NULL;
 	graph_free(&graph_fullscreen);
 
 	// Creates the path of the screenshot image.
@@ -247,6 +250,7 @@ bool screenshot_graph(Graph *graph, Glyphs *glyphs, const char *name) {
 		fprintf(stderr, "[ARGUS]: error: unable to malloc the path buffer for the screenshot graph!\n");
 		return false;
 	}
+	path[name_len+folder_len+5] = '\0';
 	memcpy(path, folder, folder_len);
 	memcpy(path+folder_len+1, name, name_len);
 	memcpy(path+folder_len+name_len+1, ".png", 5);
