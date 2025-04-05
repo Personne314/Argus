@@ -75,7 +75,7 @@ void argus_graph_set_title_color(Color c);
 void argus_graph_set_background_color(Color c);
 
 // Sets the current graph color.
-void argus_graph_set_graph_color(Color c);
+void argus_graph_set_color(Color c);
 
 // Sets the current graph x axis title.
 void argus_graph_set_x_title(const char *axis_title);

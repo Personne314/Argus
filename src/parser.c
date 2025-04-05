@@ -16,6 +16,11 @@ typedef enum {
 	PS_NONE,		///< State for the detection of instructions.
 	PS_SCREENSHOT,	///< State for the 'screenshot' instructions.
 	PS_GRAPH,		///< State for the 'graph' instructions.
+	PS_GRAPH_TITLE,	///< State for the 'graph title' instructions.
+	PS_GRAPH_TEXT,	///< State for the 'graph text' instructions.
+	PS_GRAPH_BACKGROUND,	///< State for the 'graph background' instructions.
+	PS_GRAPH_X,		///< State for the 'x' instructions.
+	PS_GRAPH_Y,		///< State for the 'y' instructions.
 	PS_AXIS,		///< State for the 'axis' instructions.
 	PS_CURVE		///< State for the 'curve' instructions.
 } ParserState;
@@ -36,6 +41,10 @@ typedef enum {
 	TK_GRID,		///< Type for the 'grid' keyword.
 	TK_PATH,		///< Type for the 'path' keyword.
 	TK_COLOR,		///< Type for the 'color' keyword.
+	TK_TEXT,		///< Type for the 'text' keyword.
+	TK_BACKGROUND,	///< Type for the 'background' keyword.
+	TK_X,			///< Type for the 'x' keyword.
+	TK_Y,			///< Type for the 'y' keyword.
 	TK_LITT_STRING,	///< Type for a string litteral.
 	TK_LITT_NUMBER,	///< Type for a number litteral.
 	TK_LITT_COLOR	///< Type for a color litteral.
@@ -102,6 +111,9 @@ Token scan_token(const char *line, size_t *p_pos) {
 	switch (c) {
 
 	// Scan for possible keywords.
+	case 'b':	
+		SCAN_KEYWORD("background", TK_BACKGROUND);
+		break;
 	case 'c':
 		SCAN_KEYWORD("color", TK_COLOR);
 		break;
@@ -114,6 +126,7 @@ Token scan_token(const char *line, size_t *p_pos) {
 		break;
 	case 't':
 		SCAN_KEYWORD("title", TK_TITLE);
+		SCAN_KEYWORD("text", TK_TEXT);
 		break;
 	case 's':
 		SCAN_KEYWORD("size", TK_SIZE);
@@ -122,6 +135,12 @@ Token scan_token(const char *line, size_t *p_pos) {
 		break;
 	case 'q':
 		SCAN_KEYWORD("quit", TK_QUIT)
+		break;
+	case 'x':
+		SCAN_KEYWORD("x", TK_X)
+		break;
+	case 'y':
+		SCAN_KEYWORD("y", TK_Y)
 		break;
 
 	// Scans a string.
@@ -282,14 +301,52 @@ Instruction parse_line(const char *line) {
 			switch (token.type) {
 			
 			// Activates the quit and show instructions detection.
-			case TK_QUIT: instruction.type = INSTR_QUIT; break;
-			case TK_SHOW: instruction.type = INSTR_SHOW; break;
-			case TK_COLOR: instruction.type = INSTR_SET_BACKGROUND_COLOR; break;
+			case TK_QUIT: 
+				if (state == PS_NONE) instruction.type = INSTR_QUIT; 
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+			case TK_SHOW:
+			if (state == PS_NONE) instruction.type = INSTR_SHOW; 
+			else parser_unexpected_token(&token, line, NULL);
+				break;
 
-			// This activates 'title' instructions.
-			case TK_TITLE: instruction.type = INSTR_SET_TITLE; break;
+			// This activates the 'color' instructions detection.
+			case TK_COLOR: 
+				if (state == PS_NONE) instruction.type = INSTR_SET_BACKGROUND_COLOR;
+				else if (state == PS_GRAPH) instruction.type = INSTR_GRAPH_SET_COLOR;
+				else if (state == PS_GRAPH_TEXT) instruction.type = INSTR_GRAPH_SET_TEXT_COLOR;
+				else if (state == PS_GRAPH_BACKGROUND) instruction.type = INSTR_GRAPH_SET_BACKGROUND_COLOR;
+				else if (state == PS_GRAPH_TITLE) instruction.type = INSTR_GRAPH_SET_TITLE_COLOR;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
 
-			// This activates 'size' instructions.
+			// This activates the 'title' instructions detection.
+			case TK_TITLE: 
+				if (state == PS_NONE) instruction.type = INSTR_SET_TITLE; 
+				else if (state == PS_GRAPH_X) {
+					instruction.type = INSTR_GRAPH_SET_X_TITLE;
+					state = PS_NONE;
+				}
+				else if (state == PS_GRAPH_Y) {
+					instruction.type = INSTR_GRAPH_SET_Y_TITLE;
+					state = PS_NONE;
+				} else if (state == PS_GRAPH) state = PS_GRAPH_TITLE;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This activates the 'background' instructions detection.
+			case TK_BACKGROUND:
+				if (state == PS_GRAPH) state = PS_GRAPH_BACKGROUND;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This activates the 'text' instructions detection.
+			case TK_TEXT:
+				if (state == PS_GRAPH) state = PS_GRAPH_TEXT;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This activates 'size' instructions detection.
 			case TK_SIZE: 
 				switch (state) {
 				case PS_NONE: instruction.type = INSTR_SET_SIZE; break;
@@ -302,7 +359,7 @@ Instruction parse_line(const char *line) {
 				else return parser_unexpected_token(&token, line, NULL);
 				break;
 
-			// Activates the grid resize instruction detection.
+			// Activates the grid resize instructions detection.
 			case TK_GRID: instruction.type = INSTR_SET_GRID_SIZE; break;
 
 			// Activates the screenshot instructions detection.
@@ -311,13 +368,13 @@ Instruction parse_line(const char *line) {
 				else state = PS_SCREENSHOT;
 				break;
 
-			// This activates 'path' instructions.
+			// This activates 'path' instructions detection.
 			case TK_PATH:
 				if (state == PS_SCREENSHOT) instruction.type = INSTR_SCREENSHOT_SET_PATH;
 				else return parser_unexpected_token(&token, line, NULL);
 				break;
 
-			// Activates the graph instructions detection.
+			// Activates the 'graph' instructions detection.
 			case TK_GRAPH:
 				if (state != PS_NONE) return parser_unexpected_token(&token, line, NULL);
 				else state = PS_GRAPH;
@@ -332,6 +389,28 @@ Instruction parse_line(const char *line) {
 				} else return parser_unexpected_token(&token, line, NULL);
 				break;
 
+			// Parse a string if possible. This can only append after the graph token, 
+			// bacause it can be used as an instruction or as a part of a multiple keyword instruction. 
+			case TK_LITT_STRING:
+				if (state == PS_GRAPH_TITLE) {
+					instruction.type = INSTR_GRAPH_SET_TITLE;
+					instruction.param1 = token.value;
+					state = PS_NONE;
+				} else return parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This activates 'x' instructions detection.
+			case TK_X:
+				if (state == PS_GRAPH) state = PS_GRAPH_X;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This activates 'y' instructions detection.
+			case TK_Y:
+				if (state == PS_GRAPH) state = PS_GRAPH_Y;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
 			// EOF, there nothing left to do.
 			case TK_EOS: break;
 
@@ -340,13 +419,18 @@ Instruction parse_line(const char *line) {
 			}
 			break;
 
-		// Case of quit and show that dont take any arguments.
-		case INSTR_QUIT: case INSTR_SHOW:
+		// Ensure that the instruction isn't followed by anything.
+		case INSTR_QUIT: 
+		case INSTR_SHOW:
+		case INSTR_GRAPH_SET_TITLE:
 			if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
 			break;
 
-		// Gets a string to use as the window title.
+		// Gets a string for set title and set path instructions.
 		case INSTR_SET_TITLE:
+		case INSTR_SCREENSHOT_SET_PATH:
+		case INSTR_GRAPH_SET_X_TITLE:
+		case INSTR_GRAPH_SET_Y_TITLE:
 			if (instruction.param1) {
 				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
 				else break;
@@ -355,6 +439,7 @@ Instruction parse_line(const char *line) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A string was expected!");
 			}
 			instruction.param1 = token.value;
+			state = PS_NONE;
 			break;
 
 		// Gets two numbers to use as the window dimensions.
@@ -368,19 +453,6 @@ Instruction parse_line(const char *line) {
 			}
 			if (instruction.param1) instruction.param2 = token.value;
 			else instruction.param1 = token.value;
-			break;
-
-		// Gets a string to use as the screenshot folder path.
-		case INSTR_SCREENSHOT_SET_PATH:
-			if (instruction.param1) {
-				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
-				else break;
-			}
-			if (token.type != TK_LITT_STRING) {
-				return parser_unexpected_token(&token, line, "[ARGUS]: A string was expected!");
-			}
-			instruction.param1 = token.value;
-			state = PS_NONE;
 			break;
 
 		// Gets two numbers to use as the screenshot dimensions.
@@ -426,8 +498,12 @@ Instruction parse_line(const char *line) {
 			state = PS_NONE;
 			break;
 
-		// Gets a color to set the window background color.
+		// Gets a color for the set color instructions.
 		case INSTR_SET_BACKGROUND_COLOR:
+		case INSTR_GRAPH_SET_COLOR:
+		case INSTR_GRAPH_SET_BACKGROUND_COLOR:
+		case INSTR_GRAPH_SET_TEXT_COLOR:
+		case INSTR_GRAPH_SET_TITLE_COLOR:
 			if (instruction.param1) {
 				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
 				else break;
@@ -436,6 +512,7 @@ Instruction parse_line(const char *line) {
 				return parser_unexpected_token(&token, line, "[ARGUS]: A color was expected!");
 			}
 			instruction.param1 = token.value;
+			state = PS_NONE;
 			break;
 		}
 	}

@@ -492,7 +492,7 @@ void argus_graph_set_background_color(Color c) {
 
 /// @brief Sets the current graph color.
 /// @param c The color to use.
-void argus_graph_set_graph_color(Color c) {
+void argus_graph_set_color(Color c) {
 	CHECK_INIT(init, argus_mutex)
 	CURRENT_GRAPH->graph_color.r = c.r;
 	CURRENT_GRAPH->graph_color.g = c.g;

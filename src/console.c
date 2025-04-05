@@ -71,6 +71,52 @@ bool execute_instruction(Instruction *instruction) {
 		argus_set_background_color(color);
 		break;
 
+	// Sets the current graph color.
+	case INSTR_GRAPH_SET_COLOR:
+		color = *(Color*)instruction->param1;
+		printf("[ARGUS]: info: setting current graph color to (%f,%f,%f).\n", color.r, color.g, color.b);
+		argus_graph_set_color(color);
+		break;
+
+	// Sets the current graph background color.
+	case INSTR_GRAPH_SET_BACKGROUND_COLOR:
+		color = *(Color*)instruction->param1;
+		printf("[ARGUS]: info: setting current graph background color to (%f,%f,%f).\n", color.r, color.g, color.b);
+		argus_graph_set_background_color(color);
+		break;
+
+	// Sets the current graph text color.
+	case INSTR_GRAPH_SET_TEXT_COLOR:
+		color = *(Color*)instruction->param1;
+		printf("[ARGUS]: info: setting current graph text color to (%f,%f,%f).\n", color.r, color.g, color.b);
+		argus_graph_set_text_color(color);
+		break;
+
+	// Sets the current graph title color.
+	case INSTR_GRAPH_SET_TITLE_COLOR:
+		color = *(Color*)instruction->param1;
+		printf("[ARGUS]: info: setting current graph title color to (%f,%f,%f).\n", color.r, color.g, color.b);
+		argus_graph_set_title_color(color);
+		break;
+
+	// Sets the current graph title.
+	case INSTR_GRAPH_SET_TITLE:
+		printf("[ARGUS]: info: setting current graph title to \"%s\".\n", (char*)instruction->param1);
+		argus_graph_set_title(instruction->param1);
+		break;
+
+	// Sets the current graph x-axis title.
+	case INSTR_GRAPH_SET_X_TITLE:
+		printf("[ARGUS]: info: setting current graph x-axis title to \"%s\".\n", (char*)instruction->param1);
+		argus_graph_set_x_title(instruction->param1);
+		break;
+	
+	// Sets the current graph y-axis title.
+	case INSTR_GRAPH_SET_Y_TITLE:
+		printf("[ARGUS]: info: setting current graph y-axis title to \"%s\".\n", (char*)instruction->param1);
+		argus_graph_set_y_title(instruction->param1);
+		break;
+
 	// This instruction do nothing.
 	case INSTR_NONE:
 	}

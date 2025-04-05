@@ -16,6 +16,15 @@ typedef enum {
 	INSTR_SET_GRID_SIZE,		///< Sets the graph grid size.
 	INSTR_SET_CURRENT_GRAPH,	///< Sets the current graph.
 	INSTR_SET_BACKGROUND_COLOR, ///< Sets the window background color.
+	INSTR_GRAPH_SET_COLOR,		///< Sets the graph color.
+	INSTR_GRAPH_SET_BACKGROUND_COLOR,	///< Sets the graph background color.
+	INSTR_GRAPH_SET_TITLE_COLOR,	///< Sets the graph title color.
+	INSTR_GRAPH_SET_TEXT_COLOR,		///< Sets the graph text color.
+
+	INSTR_GRAPH_SET_TITLE,		///< Sets the current graph title.
+	INSTR_GRAPH_SET_X_TITLE,	///< Sets the current graph x-axis label. 
+	INSTR_GRAPH_SET_Y_TITLE,	///< Sets the current graph y-axis label.
+
 	INSTR_QUIT		///< Quit the application. 
 } InstructionType;
 

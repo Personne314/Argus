@@ -42,8 +42,8 @@ Graph *graph_create(Rect rect) {
 	graph->y_axis = AXIS_INIT;
 	graph->rect = rect;
 	graph->grid_rect = RECT_INIT;
-	graph->background_color = COLOR_GRAY3;
-	graph->graph_color = COLOR_GRAY9;
+	graph->background_color = COLOR_GRAY9;
+	graph->graph_color = COLOR_GRAY3;
 	graph->title_color = COLOR_WHITE;
 	graph->text_color = COLOR_BLACK;
 	graph->background_vao = NULL;
@@ -200,15 +200,15 @@ bool graph_prepare_static(Graph *graph, Glyphs *glyphs, int window_width, int wi
 	// Initializes the colors of the vertices for the background part.
 	float colors[48];
 	for (int i = 0; i < 6; ++i) {
-		colors[4*i] =	graph->background_color.r;
-		colors[4*i+1] =	graph->background_color.g;
-		colors[4*i+2] =	graph->background_color.b;
+		colors[4*i] =	graph->graph_color.r;
+		colors[4*i+1] =	graph->graph_color.g;
+		colors[4*i+2] =	graph->graph_color.b;
 		colors[4*i+3] =	1.0f;
 	}
 	for (int i = 0; i < 6; ++i) {
-		colors[24+4*i] =	graph->graph_color.r;
-		colors[24+4*i+1] =	graph->graph_color.g;
-		colors[24+4*i+2] =	graph->graph_color.b;
+		colors[24+4*i] =	graph->background_color.r;
+		colors[24+4*i+1] =	graph->background_color.g;
+		colors[24+4*i+2] =	graph->background_color.b;
 		colors[24+4*i+3] =	1.0f;
 	}
 
