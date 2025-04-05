@@ -105,7 +105,7 @@ float parse_hex_to_float(const char *str) {
 Token scan_token(const char *line, size_t *p_pos) {
 	while (line[*p_pos] && isspace(line[*p_pos])) ++*p_pos;
 	size_t start = *p_pos;
-	size_t end = 1;
+	size_t end = 0;
 	line += start;
 
 	// Check for a known pattern depending of the first character.
@@ -155,6 +155,7 @@ Token scan_token(const char *line, size_t *p_pos) {
 
 	// Scans a string.
 	case '"':
+		++end;
 		while (line[end]) {
 			if (line[end] == '"') break; 
 			++end;
@@ -202,10 +203,12 @@ Token scan_token(const char *line, size_t *p_pos) {
 
 	// Scans a number.
 	default:
-		if (isdigit(c)) {
+		if (isdigit(c) || (c == '-' && isdigit(line[1]))) {
+			bool minus = c == '-';
+			if (minus) ++end;
 
 			// Gets the integer part.
-			double res = c-'0';
+			double res = 0;
 			while (isdigit(line[end])) {
 				res = 10.0*res + line[end]-'0';
 				++end;
@@ -259,7 +262,7 @@ Token scan_token(const char *line, size_t *p_pos) {
 				fprintf(stderr, "[ARGUS]: unable to malloc a buffer for a number!\n"); 
 				return (Token){TK_UNKNOWN, NULL, start};
 			}
-			*value = res;
+			*value = res * (minus ? -1 : 1);
 			*p_pos += end;
 			return (Token){TK_LITT_NUMBER, value, start};
 		}
