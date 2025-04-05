@@ -8,6 +8,7 @@
 /// @brief This enum lists all possible basic instructions.
 typedef enum {
 	INSTR_NONE,			///< Do nothing.
+	INSTR_QUIT,			///< Quit the application. 
 	INSTR_SHOW,			///< Show the defined graphs.
 	INSTR_SET_TITLE,	///< Sets the window title.
 	INSTR_SET_SIZE,		///< Sets the window size.
@@ -20,12 +21,12 @@ typedef enum {
 	INSTR_GRAPH_SET_BACKGROUND_COLOR,	///< Sets the graph background color.
 	INSTR_GRAPH_SET_TITLE_COLOR,	///< Sets the graph title color.
 	INSTR_GRAPH_SET_TEXT_COLOR,		///< Sets the graph text color.
-
 	INSTR_GRAPH_SET_TITLE,		///< Sets the current graph title.
 	INSTR_GRAPH_SET_X_TITLE,	///< Sets the current graph x-axis label. 
 	INSTR_GRAPH_SET_Y_TITLE,	///< Sets the current graph y-axis label.
-
-	INSTR_QUIT		///< Quit the application. 
+	INSTR_CURVE_ADD,		///< Adds a new curve to the current graph.
+	INSTR_CURVE_REMOVE,		///< Removes the current curve.
+	INSTR_SET_CURVE			///< Sets the current curve.
 } InstructionType;
 
 

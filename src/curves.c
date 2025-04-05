@@ -75,7 +75,7 @@ bool curves_delete_curve(Curves *curves, size_t id) {
 		return false;
 	}
 	curve_free(curves->data+id);
-	for (size_t i = id; i < curves->size-2; ++i) {
+	for (size_t i = id; i < curves->size-1; ++i) {
 		curves->data[i] = curves->data[i+1];
 	}
 	--curves->size;

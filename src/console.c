@@ -117,6 +117,25 @@ bool execute_instruction(Instruction *instruction) {
 		argus_graph_set_y_title(instruction->param1);
 		break;
 
+	// Adds a new curve to the current graph.
+	case INSTR_CURVE_ADD:
+		printf("[ARGUS]: info: adding a new curve to the current graph.\n");
+		argus_graph_add_curve();
+		break;
+
+	// Removes the current curve from the current graph.
+	case INSTR_CURVE_REMOVE:
+		printf("[ARGUS]: info: removing the current curve.\n");
+		argus_graph_remove_curve();
+		printf("[ARGUS]: info: the current curve id is now %d\n", argus_graph_get_current_curve());
+		break;
+
+	// Sets the current curve.
+	case INSTR_SET_CURVE:
+		printf("[ARGUS]: info: setting the current curve to %d.\n", (int)*(double*)instruction->param1);
+		argus_graph_set_current_curve((int)*(double*)instruction->param1);
+		break;
+
 	// This instruction do nothing.
 	case INSTR_NONE:
 	}

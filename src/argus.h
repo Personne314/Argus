@@ -98,6 +98,9 @@ void argus_graph_set_current_curve(size_t id);
 // Returns the number of curves in the current graph.
 size_t argus_graph_get_curve_amount();
 
+// Returns the id of the current curve.
+int argus_graph_get_current_curve();
+
 // Sets the adapt parameter for both axis.
 void argus_graph_adapt(AxisAdaptMode mode);
 

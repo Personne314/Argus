@@ -343,12 +343,12 @@ void argus_set_current_graph(int x, int y) {
 		fprintf(stderr, "[ARGUS]: warning: lines id lower than 0. Will be set to 0.\n");
 		y = 0;
 	}
-	if (x < 1) {
+	if (x > columns-1) {
 		fprintf(stderr, "[ARGUS]: warning: columns id greater than %d. Will be set to %d.\n", columns-1, columns-1);
 		x = columns-1;
 	}
-	if (y < 1) {
-		fprintf(stderr, "[ARGUS]: warning: lines id lower than %d. Will be set to %d.\n", lines-1, lines-1);
+	if (y > lines-1) {
+		fprintf(stderr, "[ARGUS]: warning: lines id greater than %d. Will be set to %d.\n", lines-1, lines-1);
 		y = lines-1;
 	}
 	current_line = y;
@@ -587,6 +587,12 @@ size_t argus_graph_get_curve_amount() {
 	CHECK_INIT(init, argus_mutex, 0)
 	return curves_size(CURRENT_GRAPH->curves);
 	pthread_mutex_unlock(&argus_mutex);
+}
+
+/// @brief Returns the id of the current curve.
+/// @note This function returns -1 if there is no current curve.
+int argus_graph_get_current_curve() {
+	return current_curve;
 }
 
 /// @brief Sets the adapt parameter for both axis.

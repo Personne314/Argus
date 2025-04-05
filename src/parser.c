@@ -45,6 +45,9 @@ typedef enum {
 	TK_BACKGROUND,	///< Type for the 'background' keyword.
 	TK_X,			///< Type for the 'x' keyword.
 	TK_Y,			///< Type for the 'y' keyword.
+	TK_CURVE,		///< Type for the 'curve' keyword.
+	TK_ADD,			///< Type for the 'add' keyword.
+	TK_REMOVE,		///< Type for the 'remove' keyword.
 	TK_LITT_STRING,	///< Type for a string litteral.
 	TK_LITT_NUMBER,	///< Type for a number litteral.
 	TK_LITT_COLOR	///< Type for a color litteral.
@@ -111,11 +114,15 @@ Token scan_token(const char *line, size_t *p_pos) {
 	switch (c) {
 
 	// Scan for possible keywords.
+	case 'a':
+		SCAN_KEYWORD("add", TK_ADD);
+		break;
 	case 'b':	
 		SCAN_KEYWORD("background", TK_BACKGROUND);
 		break;
 	case 'c':
 		SCAN_KEYWORD("color", TK_COLOR);
+		SCAN_KEYWORD("curve", TK_CURVE);
 		break;
 	case 'g':
 		SCAN_KEYWORD("graph", TK_GRAPH);
@@ -124,17 +131,20 @@ Token scan_token(const char *line, size_t *p_pos) {
 	case 'p':
 		SCAN_KEYWORD("path", TK_PATH);
 		break;
-	case 't':
-		SCAN_KEYWORD("title", TK_TITLE);
-		SCAN_KEYWORD("text", TK_TEXT);
+	case 'q':
+		SCAN_KEYWORD("quit", TK_QUIT)
+		break;
+	case 'r':
+		SCAN_KEYWORD("remove", TK_REMOVE)
 		break;
 	case 's':
 		SCAN_KEYWORD("size", TK_SIZE);
 		SCAN_KEYWORD("screenshot", TK_SCREENSHOT);
 		SCAN_KEYWORD("show", TK_SHOW);
 		break;
-	case 'q':
-		SCAN_KEYWORD("quit", TK_QUIT)
+	case 't':
+		SCAN_KEYWORD("title", TK_TITLE);
+		SCAN_KEYWORD("text", TK_TEXT);
 		break;
 	case 'x':
 		SCAN_KEYWORD("x", TK_X)
@@ -386,6 +396,10 @@ Instruction parse_line(const char *line) {
 				if (state == PS_GRAPH) {
 					instruction.type = INSTR_SET_CURRENT_GRAPH;
 					instruction.param1 = token.value;
+				} else if (state == PS_CURVE) {
+					instruction.param1 = token.value;
+					instruction.type = INSTR_SET_CURVE;
+					state = PS_NONE;
 				} else return parser_unexpected_token(&token, line, NULL);
 				break;
 
@@ -411,6 +425,30 @@ Instruction parse_line(const char *line) {
 				else parser_unexpected_token(&token, line, NULL);
 				break;
 
+			// This activates 'curve' instructions detection.
+			case TK_CURVE:
+				if (state == PS_NONE) state = PS_CURVE;
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This detects and 'curve add' instruction. 
+			case TK_ADD:
+				if (state == PS_CURVE) {
+					state = PS_NONE;
+					instruction.type = INSTR_CURVE_ADD;
+				}
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+
+			// This detects and 'curve remove' instruction.
+			case TK_REMOVE:
+				if (state == PS_CURVE) {
+					state = PS_NONE;
+					instruction.type = INSTR_CURVE_REMOVE;
+				}
+				else parser_unexpected_token(&token, line, NULL);
+				break;
+				
 			// EOF, there nothing left to do.
 			case TK_EOS: break;
 
@@ -423,6 +461,9 @@ Instruction parse_line(const char *line) {
 		case INSTR_QUIT: 
 		case INSTR_SHOW:
 		case INSTR_GRAPH_SET_TITLE:
+		case INSTR_CURVE_ADD:
+		case INSTR_CURVE_REMOVE:
+		case INSTR_SET_CURVE:
 			if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
 			break;
 
