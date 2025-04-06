@@ -9,6 +9,16 @@
 
 
 
+/// @brief This are the name of the adapt mode constant, used to print messages.
+static const char * const adapt_mode_name[] = {
+	[ADAPTMODE_NONE] = "none",
+	[ADAPTMODE_AUTO_FIT] = "fit",
+	[ADAPTMODE_AUTO_EXTEND] = "extend",
+	[ADAPTMODE_SLIDING_WINDOW] = "sliding"
+};
+
+
+
 /// @brief This function executes an instruction.
 /// @param instruction The instruction to execute.
 /// @return false if the program must stop its execution.
@@ -136,6 +146,27 @@ bool execute_instruction(Instruction *instruction) {
 		argus_graph_set_current_curve((int)*(double*)instruction->param1);
 		break;
 
+	// Sets the current graph adapt mode for both axis.
+	case INSTR_GRAPH_ADAPT:
+		printf("[ARGUS]: info: setting the current graph axis adapt mode to '%s'.\n", 
+			adapt_mode_name[*(AxisAdaptMode*)instruction->param1]);
+		argus_graph_adapt(*(AxisAdaptMode*)instruction->param1);
+		break;
+
+	// Sets the current graph adapt mode for x-axis.
+	case INSTR_GRAPH_X_ADAPT:
+		printf("[ARGUS]: info: setting the current graph x-axis adapt mode to '%s'.\n", 
+			adapt_mode_name[*(AxisAdaptMode*)instruction->param1]);
+		argus_graph_adapt_x(*(AxisAdaptMode*)instruction->param1);
+		break;
+
+	// Sets the current graph adapt mode for y-axis.
+	case INSTR_GRAPH_Y_ADAPT:
+		printf("[ARGUS]: info: setting the current graph y-axis adapt mode to '%s'.\n", 
+			adapt_mode_name[*(AxisAdaptMode*)instruction->param1]);
+		argus_graph_adapt_y(*(AxisAdaptMode*)instruction->param1);
+		break;
+		
 	// This instruction do nothing.
 	case INSTR_NONE:
 	}

@@ -24,6 +24,9 @@ typedef enum {
 	INSTR_GRAPH_SET_TITLE,		///< Sets the current graph title.
 	INSTR_GRAPH_SET_X_TITLE,	///< Sets the current graph x-axis label. 
 	INSTR_GRAPH_SET_Y_TITLE,	///< Sets the current graph y-axis label.
+	INSTR_GRAPH_ADAPT,		///< Sets the adapt mode for both axis.
+	INSTR_GRAPH_X_ADAPT,	///< Sets the adapt mode for the x-axis.
+	INSTR_GRAPH_Y_ADAPT,	///< Sets the adapt mode for the y-axis.
 	INSTR_CURVE_ADD,		///< Adds a new curve to the current graph.
 	INSTR_CURVE_REMOVE,		///< Removes the current curve.
 	INSTR_SET_CURVE			///< Sets the current curve.

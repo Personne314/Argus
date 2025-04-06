@@ -6,8 +6,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
-#include "structs.h"
 
+#include "structs.h"
+#include "enums.h"
 
 
 /// @enum ParserState
@@ -48,6 +49,11 @@ typedef enum {
 	TK_CURVE,		///< Type for the 'curve' keyword.
 	TK_ADD,			///< Type for the 'add' keyword.
 	TK_REMOVE,		///< Type for the 'remove' keyword.
+	TK_ADAPT,		///< Type for the 'adapt' keyword.
+	TK_NONE,		///< Type for the 'none' keyword.
+	TK_EXTEND,		///< Type for the 'extend' keyword.
+	TK_FIT,			///< Type for the 'fit' keyword.
+	TK_SLIDE,		///< Type for the 'slide' keyword.
 	TK_LITT_STRING,	///< Type for a string litteral.
 	TK_LITT_NUMBER,	///< Type for a number litteral.
 	TK_LITT_COLOR	///< Type for a color litteral.
@@ -112,10 +118,10 @@ Token scan_token(const char *line, size_t *p_pos) {
 	char c = line[0];
 	if (!c) return (Token){TK_EOS, NULL, start};
 	switch (c) {
-
 	// Scan for possible keywords.
 	case 'a':
 		SCAN_KEYWORD("add", TK_ADD);
+		SCAN_KEYWORD("adapt", TK_ADAPT);
 		break;
 	case 'b':	
 		SCAN_KEYWORD("background", TK_BACKGROUND);
@@ -124,9 +130,18 @@ Token scan_token(const char *line, size_t *p_pos) {
 		SCAN_KEYWORD("color", TK_COLOR);
 		SCAN_KEYWORD("curve", TK_CURVE);
 		break;
+	case 'e':
+		SCAN_KEYWORD("extend", TK_EXTEND);
+		break;
+	case 'f':
+		SCAN_KEYWORD("fit", TK_FIT);
+		break;
 	case 'g':
 		SCAN_KEYWORD("graph", TK_GRAPH);
 		SCAN_KEYWORD("grid", TK_GRID);
+		break;
+	case 'n':
+		SCAN_KEYWORD("none", TK_NONE);
 		break;
 	case 'p':
 		SCAN_KEYWORD("path", TK_PATH);
@@ -139,6 +154,7 @@ Token scan_token(const char *line, size_t *p_pos) {
 		break;
 	case 's':
 		SCAN_KEYWORD("size", TK_SIZE);
+		SCAN_KEYWORD("slide", TK_SLIDE);
 		SCAN_KEYWORD("screenshot", TK_SCREENSHOT);
 		SCAN_KEYWORD("show", TK_SHOW);
 		break;
@@ -393,6 +409,15 @@ Instruction parse_line(const char *line) {
 				else state = PS_GRAPH;
 				break;
 
+			// Activates the 'graph adapt' instructions detection.
+			case TK_ADAPT:
+				if (state == PS_GRAPH) instruction.type = INSTR_GRAPH_ADAPT;
+				else if (state == PS_GRAPH_X) instruction.type = INSTR_GRAPH_X_ADAPT;
+				else if (state == PS_GRAPH_Y) instruction.type = INSTR_GRAPH_Y_ADAPT;
+				else return parser_unexpected_token(&token, line, NULL);
+				state = PS_NONE;
+				break;
+
 			// Parse a number if possible. This can only append after the graph token, 
 			// bacause it can be used as an instruction or as a part of a multiple keyword instruction. 
 			case TK_LITT_NUMBER:
@@ -557,6 +582,32 @@ Instruction parse_line(const char *line) {
 			}
 			instruction.param1 = token.value;
 			state = PS_NONE;
+			break;
+
+		// Gets an axis adapt mode for the adapt instructions.
+		case INSTR_GRAPH_ADAPT:
+		case INSTR_GRAPH_X_ADAPT:
+		case INSTR_GRAPH_Y_ADAPT:
+			if (instruction.param1) {
+				if (token.type != TK_EOS) return parser_unexpected_token(&token, line, NULL);
+				else break;
+			}
+			AxisAdaptMode *mode = malloc(sizeof(AxisAdaptMode));
+			if (!mode) {
+				fprintf(stderr, "[ARGUS]: error: unable to malloc a buffer for an axis mode!\n");
+				instruction.type = INSTR_NONE;
+				break;
+			}
+			switch (token.type) {
+			case TK_NONE:	*mode = ADAPTMODE_NONE;				break;
+			case TK_FIT:	*mode = ADAPTMODE_AUTO_FIT;			break;
+			case TK_EXTEND:	*mode = ADAPTMODE_AUTO_EXTEND;		break;
+			case TK_SLIDE:	*mode = ADAPTMODE_SLIDING_WINDOW;	break;
+			default: 
+				free(mode);	
+				return parser_unexpected_token(&token, line, "[ARGUS]: none/fit/extend/slide was expected!");
+			}
+			instruction.param1 = mode;
 			break;
 		}
 	}
