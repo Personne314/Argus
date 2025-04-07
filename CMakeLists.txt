@@ -25,29 +25,6 @@ endforeach()
 
 
 
-# Target to ensure that after an executable is build, 
-# the ressources in the build folders are actualised.
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND EXISTS ${CMAKE_SOURCE_DIR}/resources/release)
-    add_custom_target(copy_resources
-        COMMAND rsync -a --update --exclude=".gitkeep" --exclude="release/" --exclude="debug/" 
-            ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND rsync -a --update --exclude=".gitkeep" 
-            ${CMAKE_SOURCE_DIR}/resources/release/ ${CMAKE_CURRENT_BINARY_DIR}
-    )
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug" AND EXISTS ${CMAKE_SOURCE_DIR}/resources/debug)
-    add_custom_target(copy_resources
-        COMMAND rsync -a --update --exclude=".gitkeep" --exclude="release/" --exclude="debug/" 
-            ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND rsync -a --update --exclude=".gitkeep" 
-            ${CMAKE_SOURCE_DIR}/resources/debug/ ${CMAKE_CURRENT_BINARY_DIR}
-    )
-else()
-    add_custom_target(copy_resources
-        COMMAND rsync -a --update --exclude=".gitkeep" --exclude="release/" --exclude="debug/" 
-            ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_CURRENT_BINARY_DIR}
-    )
-endif()
-
 # Function to add an executable for tests.
 function(add_test_executable TEST_NAME ...)
     set(TEST_SOURCES ${ARGV})
@@ -62,7 +39,6 @@ function(add_test_executable TEST_NAME ...)
         COMMAND $<TARGET_FILE:${TEST_NAME}>
         DEPENDS ${TEST_NAME}
     )
-    add_dependencies(${TEST_NAME} copy_resources)
 endfunction()
 
 
@@ -75,7 +51,6 @@ if (SOURCES)
         $<$<CONFIG:Debug>:${DEBUG_FLAGS}> 
         $<$<CONFIG:Release>:${RELEASE_FLAGS}>               
     )
-    add_dependencies(${EXEC_NAME} copy_resources)
 endif()
 
 # Add tests only for Debug mode.
@@ -95,7 +70,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     foreach(TEST_FILE ${TESTS})
         get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
         add_test_executable(${TEST_NAME} ${SOURCES_TESTS})
-        add_dependencies(${TEST_NAME} copy_resources)
     endforeach()
 
 endif()

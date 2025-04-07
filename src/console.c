@@ -182,18 +182,42 @@ bool execute_instruction(Instruction *instruction) {
 
 
 // The main function. This clears the console and start reading the commands.
-int main() {
-    char *input = NULL;
-	bool run = true;
+int main(int argc, const char *argv[]) {
 
-	// Initialize the lib and clears the console.
+	// Initialize the lib.
 	argus_init();
 	if (!argus_is_init()) return -1;
+
+	// If there is some input files, opens them.
+	if (argc >= 2) {
+		for (int i = 1; i < argc; ++i) {
+			FILE *file = fopen(argv[i], "r");
+			if (!file) {
+				fprintf(stderr, "[ARGUS]: error: unable to open script file '%s'!\n", argv[1]);
+				return -1;
+			}
+	
+			// Reads the file line after line.
+			char line[1024];
+			while (fgets(line, sizeof(line), file)) {
+				Instruction instruction = parse_line(line);
+				execute_instruction(&instruction);
+				if (!argus_is_init()) return -1;	
+			}
+			fclose(file);
+		}
+		argus_quit();
+		return 0;
+	}
+
+	// Clears the console.
 	system("clear");
 	printf("[ARGUS] Welcome !\n");
 
 	// The main loop. Reads the commands until a quit instruction is found.
 	using_history();
+	char *input = NULL;
+	bool run = true;
 	while (run) {
 
 		// Reads the command.
