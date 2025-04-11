@@ -6,9 +6,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
-
+#include <float.h>
 #include "structs.h"
 #include "enums.h"
+
 
 
 /// @enum ParserState
@@ -87,6 +88,72 @@ int parse_hex_to_int(char c) {
 /// @note This is a linear function from [0x00,0xFF] into [0.0f,1.0f]
 float parse_hex_to_float(const char *str) {
 	return ((parse_hex_to_int(str[0])<<4)+parse_hex_to_int(str[1]))/255.0f;
+}
+
+/// @brief This parse a string into a float.
+/// @param line 
+/// @param offset 
+/// @return 
+double parse_double(const char *line, size_t *offset) {
+	size_t end = *offset;
+	bool minus = line[end] == '-';
+	if (minus) ++end;
+
+	// Gets the integer part.
+	double res = 0;
+	while (isdigit(line[end])) {
+		res = 10.0*res + line[end]-'0';
+		++end;
+	}
+
+	// Gets the decimal part.
+	if (line[end] == '.') {
+		++end;
+		double dec = 0.1;
+		while (isdigit(line[end])) {
+			res += dec*(line[end]-'0');
+			dec *= 0.1;
+			++end;
+		}
+	}
+
+	// Scans an exponent.
+	if (line[end] == 'e' || line[end] == 'E') {
+		++end;
+		if (!isdigit(line[end]) && line[end] != '-' && line[end] != '+') {
+			*offset = end;
+			fprintf(stderr, "[ARGUS]: an integer was expected after the e!\n"); 
+			return NAN;
+		}
+		double n = line[end] == '-' ? -1 : 1;
+		if (line[end] == '-' || line[end] == '+') ++end;
+		if (!isdigit(line[end])) {
+			*offset = end;
+			fprintf(stderr, "[ARGUS]: an integer was expected after the e!\n"); 
+			return NAN;
+		}
+		n *= line[end]-'0';
+		++end;
+		while (isdigit(line[end])) n = 10.0*n + line[end]-'0';
+		res *= pow(10.0, n);
+	}
+
+	// Checks if the number ends.
+	*offset = end;
+	if (line[end] && !isspace(line[end])) {
+		if (isalnum(line[end])) {
+			fprintf(stderr, "[ARGUS]: unexpected character '%c'!\n", line[end]); 
+			return NAN;
+		}
+	}
+
+	// Creates the token.
+	double *value = malloc(sizeof(double));
+	if (!value) {
+		fprintf(stderr, "[ARGUS]: unable to malloc a buffer for a number!\n"); 
+		return NAN;
+	}
+	return res * (minus ? -1 : 1);
 }
 
 
@@ -220,57 +287,11 @@ Token scan_token(const char *line, size_t *p_pos) {
 	// Scans a number.
 	default:
 		if (isdigit(c) || (c == '-' && isdigit(line[1]))) {
-			bool minus = c == '-';
-			if (minus) ++end;
-
-			// Gets the integer part.
-			double res = 0;
-			while (isdigit(line[end])) {
-				res = 10.0*res + line[end]-'0';
-				++end;
-			}
-
-			// Gets the decimal part.
-			if (line[end] == '.') {
-				++end;
-				double dec = 0.1;
-				while (isdigit(line[end])) {
-					res += dec*(line[end]-'0');
-					dec *= 0.1;
-					++end;
-				}
-			}
-
-			// Scans an exponent.
-			if (line[end] == 'e') {
-				++end;
-				if (!isdigit(line[end]) && line[end] != '-' && line[end] != '+') {
-					*p_pos += end;
-					fprintf(stderr, "[ARGUS]: an integer was expected after the e!\n"); 
-					return (Token){TK_UNKNOWN, NULL, start+end};
-				}
-				double n = line[end] == '-' ? -1 : 1;
-				if (line[end] == '-' || line[end] == '+') ++end;
-				if (!isdigit(line[end])) {
-					*p_pos += end;
-					fprintf(stderr, "[ARGUS]: an integer was expected after the e!\n"); 
-					return (Token){TK_UNKNOWN, NULL, start+end};
-				}
-				n *= line[end]-'0';
-				++end;
-				while (isdigit(line[end])) n = 10.0*n + line[end]-'0';
-				res *= pow(10.0, n);
-			}
-
-			// Checks if the number ends.
-			if (line[end] && !isspace(line[end])) {
-				if (!isdigit(line[end])) {
-					*p_pos += end;
-					fprintf(stderr, "[ARGUS]: unexpected character '%c'!\n", line[end]); 
-					return (Token){TK_UNKNOWN, NULL, start+end};
-				}
-			}
-
+			printf("parsing double\n");
+			double res = parse_double(line, &end);
+			*p_pos += end;
+			if (res == NAN) return (Token){TK_UNKNOWN, NULL, start};
+			
 			// Creates the token.
 			double *value = malloc(sizeof(double));
 			if (!value) {
@@ -278,9 +299,8 @@ Token scan_token(const char *line, size_t *p_pos) {
 				fprintf(stderr, "[ARGUS]: unable to malloc a buffer for a number!\n"); 
 				return (Token){TK_UNKNOWN, NULL, start};
 			}
-			*value = res * (minus ? -1 : 1);
-			*p_pos += end;
-			return (Token){TK_LITT_NUMBER, value, start};
+			*value = res;
+			return (Token){TK_LITT_NUMBER, value, start};	
 		}
 	}
 
@@ -308,8 +328,6 @@ Instruction parser_unexpected_token(Token *token, const char *line, const char *
 	free(token->value);
     return (Instruction){INSTR_NONE, NULL, NULL};
 }
-
-
 
 /// @brief This parse a line into an instruction.
 /// @param line The line to parse. Thi must not be NULL.

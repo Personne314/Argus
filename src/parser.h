@@ -43,5 +43,8 @@ typedef struct {
 
 
 
+// This parse a string into a float.
+double parse_double(const char *line, size_t *offset);
+
 // This parse a line into an instruction.
 Instruction parse_line(const char *line);
