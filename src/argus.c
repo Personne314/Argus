@@ -550,9 +550,11 @@ void argus_graph_set_text_color(Color c) {
 
 /// @brief Adds a new curve to the current graph.
 /// @note This should be called at least once on a graph before trying to draw anything.
+/// @note The new curve will be set as the current curve.
 void argus_graph_add_curve() {
 	CHECK_INIT(init, argus_mutex)
 	curves_push_back_curve(CURRENT_GRAPH->curves);
+	current_curve = curves_size(CURRENT_GRAPH->curves)-1;
 	pthread_mutex_unlock(&argus_mutex);
 }
 
@@ -759,6 +761,17 @@ void argus_curve_set_update_function(void (*func)(float *x, float *y, double dt)
 		return;
 	}
 	curve_set_update_function(CURRENT_CURVE, func);
+	pthread_mutex_unlock(&argus_mutex);
+}
+
+// Sets the current curve draw mode.
+void argus_curve_set_draw_mode(DrawMode mode) {
+	CHECK_INIT(init, argus_mutex)
+	if (current_curve < 0) {
+		fprintf(stderr, "[ARGUS]: warning: There is not any selected curve. The draw mode won't change.\n");	
+		return;
+	}
+	CURRENT_CURVE->mode = mode;
 	pthread_mutex_unlock(&argus_mutex);
 }
 

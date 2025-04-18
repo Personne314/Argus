@@ -6,6 +6,7 @@
 #include "axis.h"
 #include "structs.h"
 #include "vao.h"
+#include "enums.h"
 
 
 
@@ -21,7 +22,9 @@ typedef struct {
     float x_max;	///< Maximum x-axis value.
     float y_min;	///< Minimum y-axis value.
     float y_max;	///< Maximum y-axis value.
+    DrawMode mode;  ///< The draw mode to use for the curve.
     bool to_render; ///< true if the VAO must be recreated.
+
 } Curve;
 
 

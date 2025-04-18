@@ -26,6 +26,8 @@ Curve *curve_create() {
 	curve->x_val = NULL;
 	curve->y_val = NULL;
 	curve->to_render = false;
+	curve->update = NULL;
+	curve->mode = DRAW_CURVE;
 	return curve;
 }
 
@@ -124,6 +126,153 @@ void curve_push_y_data_raw(Curve *curve, float *data, size_t n) {
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+/// @brief Generates the vertices for a curve.
+/// @param x The x coordinates data to use.
+/// @param y The y coordinates data to use.
+/// @param vertices The vector where to store the vertices.
+/// @param limits The axis limits.
+/// @param rect The rect of the graph.
+void curve_prepare_curve(RingBuffer *x, RingBuffer *y, Vector *vertices, const Rect limits, const Rect rect) {
+	const size_t size = x->size;
+	if (size < 2) return;
+	const float x_min = limits.x;
+	const float y_min = limits.y;
+	const float x_max = limits.w;
+	const float y_max = limits.h;
+
+	// Adds all the points of the curve if they're visible.
+	bool curve_started = false;
+	size_t i = 0;
+	Point prev, current;
+	prev.x = (ringbuffer_at(x, 0)-x_min) / (x_max-x_min);
+	prev.y = 1.0f-(ringbuffer_at(y, 0)-y_min) / (y_max-y_min);
+	while (i < size) {
+
+		// Gets the current point coordinates and checks what should be added to the point vector.
+		current.x = (ringbuffer_at(x, i)-x_min) / (x_max-x_min);
+		current.y = 1.0f-(ringbuffer_at(y, i)-y_min) / (y_max-y_min);
+		if (curve_started) {
+
+			// Both points are in the graph area.
+			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
+				vector_push_back(vertices, rect.x + rect.w*current.x);
+				vector_push_back(vertices, rect.y + rect.h*current.y);
+
+			// The first point is in the graph area but not the second.
+			} else {
+				Point new_current;
+				move_in_rectangle(prev, current, &new_current);
+				vector_push_back(vertices, rect.x + rect.w*new_current.x);
+				vector_push_back(vertices, rect.y + rect.h*new_current.y);
+				curve_started = false;
+			}
+
+		} else {
+
+			// The second point is in the graph area but not the first.
+			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
+				Point new_prev;
+				move_in_rectangle(current, prev, &new_prev);
+				vector_push_back(vertices, rect.x + rect.w*new_prev.x);
+				vector_push_back(vertices, rect.y + rect.h*new_prev.y);
+				vector_push_back(vertices, rect.x + rect.w*current.x);
+				vector_push_back(vertices, rect.y + rect.h*current.y);
+				curve_started = true;
+				
+			// Both points are out of the graph but they segment intersects the graph area. 
+			} else if (intersect_rectangle(prev, current)) {
+				Point new_current, new_prev;
+				move_in_rectangle(prev, current, &new_current);
+				move_in_rectangle(current, prev, &new_prev);
+				vector_push_back(vertices, rect.x + rect.w*new_prev.x);
+				vector_push_back(vertices, rect.y + rect.h*new_prev.y);
+				vector_push_back(vertices, rect.x + rect.w*new_current.x);
+				vector_push_back(vertices, rect.y + rect.h*new_current.y);
+			}
+		}
+
+		// Next point.
+		prev = current;
+		++i;
+	}
+}
+
+
+
+
+
+/// @brief 
+/// @param x 
+/// @param y 
+/// @param vertices 
+/// @param limits 
+/// @param rect 
+void curve_prepare_scatter(RingBuffer *x, RingBuffer *y, Vector *vertices, const Rect limits, const Rect rect) {
+	const size_t size = x->size;
+	if (size < 2) return;
+	const float x_min = limits.x;
+	const float y_min = limits.y;
+	const float x_max = limits.w;
+	const float y_max = limits.h;
+
+	// Adds all the points of the curve if they're visible.
+	bool curve_started = false;
+	size_t i = 0;
+	Point current;
+	while (i < size) {
+
+		// Gets the current point coordinates and checks what should be added to the point vector.
+		current.x = (ringbuffer_at(x, i)-x_min) / (x_max-x_min);
+		current.y = 1.0f-(ringbuffer_at(y, i)-y_min) / (y_max-y_min);
+		if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
+
+
+			///////////////////////////////////////////////////////////
+			//                   ADDS VERTICES HERE                  //
+			///////////////////////////////////////////////////////////
+
+
+		}
+
+	}
+}
+
+
+
+
+
+/*
+
+
+
+largeur/hauteur -> uniform
+
+offset -> par instance
+
+vertices -> identiques, instance ?
+
+
+
+
+
+*/
+
+
+
+
+
+
 /// @brief Prepares the VAO of a curve in a given graph.
 /// @param curve The curve to prepare.
 /// @param x_axis The x axis of the graph.
@@ -138,77 +287,22 @@ bool curve_prepare_dynamic(Curve *curve, const Axis *x_axis, const Axis *y_axis,
 		fprintf(stderr, "[ARGUS]: error: the curve x and y buffers are not of the same size!\n");
 		return false;
 	}
-	const size_t size = curve->x_val->size;
-	if (size <= 1) return true;
+	if (!curve->x_val->size) return true;
 
 	// Gets the axis limits.
-	const float x_min = x_axis->min;
-	const float x_max = x_axis->max;
-	const float y_min = y_axis->min;
-	const float y_max = y_axis->max;
+	const Rect limits = {x_axis->min, y_axis->min, x_axis->max, y_axis->max};
 
-	// Creates the buffer to store the points.
+	// Creates the buffer to store the points vertices.
 	Vector *point_vec = vector_create(64);
 	if (!point_vec) {
 		fprintf(stderr, "[ARGUS]: error: unable to create a vector to store curve points!\n");
 		return false;
 	}
 
-	// Adds all the points of the curve if they're visible.
-	bool curve_started = false;
-	size_t i = 0;
-	Point prev, current;
-	prev.x = (ringbuffer_at(curve->x_val, 0)-x_min) / (x_max-x_min);
-	prev.y = 1.0f-(ringbuffer_at(curve->y_val, 0)-y_min) / (y_max-y_min);
-	while (i < size) {
-
-		// Gets the current point coordinates and checks what should be added to the point vector.
-		current.x = (ringbuffer_at(curve->x_val, i)-x_min) / (x_max-x_min);
-		current.y = 1.0f-(ringbuffer_at(curve->y_val, i)-y_min) / (y_max-y_min);
-		if (curve_started) {
-
-			// Both points are in the graph area.
-			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
-				vector_push_back(point_vec, rect.x + rect.w*current.x);
-				vector_push_back(point_vec, rect.y + rect.h*current.y);
-
-			// The first point is in the graph area but not the second.
-			} else {
-				Point new_current;
-				move_in_rectangle(prev, current, &new_current);
-				vector_push_back(point_vec, rect.x + rect.w*new_current.x);
-				vector_push_back(point_vec, rect.y + rect.h*new_current.y);
-				curve_started = false;
-			}
-
-		} else {
-
-			// The second point is in the graph area but not the first.
-			if (current.x >= 0 && current.x <= 1 && current.y >= 0 && current.y <= 1) {
-				Point new_prev;
-				move_in_rectangle(current, prev, &new_prev);
-				vector_push_back(point_vec, rect.x + rect.w*new_prev.x);
-				vector_push_back(point_vec, rect.y + rect.h*new_prev.y);
-				vector_push_back(point_vec, rect.x + rect.w*current.x);
-				vector_push_back(point_vec, rect.y + rect.h*current.y);
-				curve_started = true;
-				
-			// Both points are out of the graph but they segment intersects the graph area. 
-			} else if (intersect_rectangle(prev, current)) {
-				Point new_current, new_prev;
-				move_in_rectangle(prev, current, &new_current);
-				move_in_rectangle(current, prev, &new_prev);
-				vector_push_back(point_vec, rect.x + rect.w*new_prev.x);
-				vector_push_back(point_vec, rect.y + rect.h*new_prev.y);
-				vector_push_back(point_vec, rect.x + rect.w*new_current.x);
-				vector_push_back(point_vec, rect.y + rect.h*new_current.y);
-			}
-		}
-
-		// Next point.
-		prev = current;
-		++i;
-	}
+	// Generates the vertices according to the drawing mode.
+	if (curve->mode == DRAW_SCATTER) curve_prepare_scatter(curve->x_val, curve->y_val, point_vec, limits, rect);
+	else curve_prepare_curve(curve->x_val, curve->y_val, point_vec, limits, rect);
+	if (!vector_size(point_vec)) return true;
 
 	// Creates the VAO.
 	void *data = point_vec->data;
